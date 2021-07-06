@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AudioOrganizer</string>
+    <string name="authorization">АВТОРИЗАЦИЯ</string>
+    <string name="wave_image_description">Music Wave Image</string>
 </resources>
