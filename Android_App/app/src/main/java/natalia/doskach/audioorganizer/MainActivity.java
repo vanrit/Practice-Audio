@@ -5,6 +5,8 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -12,13 +14,25 @@ import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
+
+    ArrayList<Audio> audios;
+    AudioListAdapter a;
+    RecyclerView list;
     boolean isFloatingMenuOpen = false;
     ActivityResultLauncher<Intent> audioActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -33,6 +47,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        audios = new ArrayList<>();
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        list = findViewById(R.id.audioList);
+        a = new AudioListAdapter(audios);
+        list.setAdapter(a);
+        list.setLayoutManager(new LinearLayoutManager(this));
+        a.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.overflow_menu, menu);
+        return true;
     }
 
     public void openRecordAudio(View view) {
@@ -71,5 +104,11 @@ public class MainActivity extends AppCompatActivity {
             fab4.setVisibility(View.INVISIBLE);
         }
         isFloatingMenuOpen = !isFloatingMenuOpen;
+    }
+
+    public void logout(MenuItem item) {
+    }
+
+    public void synchronize(MenuItem item) {
     }
 }
