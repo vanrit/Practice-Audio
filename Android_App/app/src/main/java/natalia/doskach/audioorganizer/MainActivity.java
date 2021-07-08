@@ -18,8 +18,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Audio> audios;
     AudioListAdapter a;
     RecyclerView list;
+    ImageButton menuBtn;
     boolean isFloatingMenuOpen = false;
     ActivityResultLauncher<Intent> audioActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -48,17 +51,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         audios = new ArrayList<>();
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
-        audios.add(new Audio("woof","dog",10,"woof.mp3"));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
         list = findViewById(R.id.audioList);
         a = new AudioListAdapter(audios);
         list.setAdapter(a);
         list.setLayoutManager(new LinearLayoutManager(this));
         a.notifyDataSetChanged();
+        menuBtn = (ImageButton) findViewById(R.id.overflow_menu);
+        menuBtn.setOnClickListener(new ImageButton.OnClickListener() {
+            public void onClick(View v) {
+                Log.i("info","openMenu");
+                showPopupMenu(v);
+            }
+        });
+    }
+
+    private void showPopupMenu(View v) {
+        PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
+        popupMenu.inflate(R.menu.overflow_menu);
+
+        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+            @Override
+            public void onDismiss(PopupMenu menu) {
+                Log.i("info","close Menu");
+            }
+        });
+        popupMenu.show();
     }
 
     @Override

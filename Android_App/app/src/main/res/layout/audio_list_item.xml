@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    >
 
     <TextView
         android:id="@+id/nameTW"
@@ -50,14 +52,14 @@
         app:layout_constraintTop_toBottomOf="@+id/authorTW" />
 
     <ImageButton
-        android:src="@drawable/ic_more_vert"
         android:id="@+id/listMenuBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="55dp"
+        android:layout_height="67dp"
         android:layout_gravity="right"
+        android:background="@null"
+        android:src="@drawable/ic_more_vert"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:background="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

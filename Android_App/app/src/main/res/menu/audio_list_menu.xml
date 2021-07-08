@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="переименовать" android:id="@+id/renameBtn"/>
+    <item android:title="скачать файл" android:id="@+id/downloadRemoveBtn"/>
+    <item android:title="удалить из списка" android:id="@+id/deleteBtn"/>
+</menu>
