@@ -5,4 +5,11 @@
     <string name="login">ЛОГИН/E-MAIL</string>
     <string name="hintlogin">anonymus123</string>
     <string name="search_hint">search</string>
+    <string name="grey_panel">Grey panel</string>
+    <string name="password">ПАРОЛЬ</string>
+    <string name="forget_password">ЗАБЫЛИ ПАРОЛЬ?</string>
+    <string name="green_button">Green button</string>
+    <string name="enter">ВОЙТИ</string>
+    <string name="yellow_button">Yellow button</string>
+    <string name="registration">РЕГИСТРАЦИЯ</string>
 </resources>

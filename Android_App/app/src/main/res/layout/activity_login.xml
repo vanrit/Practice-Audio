@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginTop="60dp"
-        android:layout_marginEnd="110dp"
+        android:layout_marginEnd="150dp"
         android:fontFamily="@font/alegreyasansbold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -36,13 +36,25 @@
         android:textColor="#3D3D3D"
         android:textSize="18sp" />
 
+    <ImageView
+        android:id="@+id/panel1"
+        android:layout_width="330dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/grey_panel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/editLogin"
+        app:layout_constraintBottom_toBottomOf="@id/editLogin"
+        app:srcCompat="@drawable/button_panel" />
+
     <EditText
         android:id="@+id/editLogin"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:layout_marginTop="30dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="70dp"
         android:background="#D9D9D9"
         android:fontFamily="@font/alegreyasansrregular"
         android:hint="@string/hintlogin"
@@ -52,19 +64,19 @@
         android:inputType="text"
         android:textColor="#3D3D3D"
         android:textColorHint="#AAAAAA"
-        android:textSize="18sp"
+        android:textSize="21sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/textView1" />
 
     <TextView
         android:id="@+id/textView2"
-        android:text="ПАРОЛЬ"
+        android:text="@string/password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginTop="60dp"
-        android:layout_marginEnd="160dp"
+        android:layout_marginEnd="200dp"
         android:fontFamily="@font/alegreyasansbold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -72,16 +84,28 @@
         android:textColor="#3D3D3D"
         android:textSize="18sp" />
 
+    <ImageView
+        android:id="@+id/panel2"
+        android:layout_width="330dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/grey_panel"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/edit1"
+        app:layout_constraintBottom_toBottomOf="@id/edit1"
+        app:srcCompat="@drawable/button_panel" />
+
     <EditText
-        android:id="@+id/editPassword"
+        android:id="@+id/edit1"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:layout_marginTop="30dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="70dp"
         android:background="#D9D9D9"
         android:fontFamily="@font/alegreyasansrregular"
-        android:hint="PASSWORD"
+        android:hint="@string/password"
         android:imeOptions="actionDone"
         android:importantForAutofill="no"
         android:includeFontPadding="false"
@@ -101,47 +125,48 @@
         android:layout_marginStart="0dp"
         android:layout_marginEnd="150dp"
         android:background="null"
-        android:text="ЗАБЫЛИ ПАРОЛЬ?"
+        android:text="@string/forget_password"
         android:textColor="#3D3D3D"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:fontFamily="@font/alegreyasansrregular"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/editPassword" />
+        app:layout_constraintTop_toTopOf="@id/edit1" />
 
 
-        <ImageButton
-            android:id="@+id/signIn"
-            android:layout_width="190sp"
-            android:layout_height="60sp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="60dp"
-            android:layout_marginEnd="20dp"
-            android:background="@drawable/button_sign_in"
-            android:gravity="center"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/forgetPassword" />
+    <ImageButton
+        android:id="@+id/signIn"
+        android:layout_width="220sp"
+        android:layout_height="70sp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/button_sign_in"
+        android:gravity="center"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/forgetPassword"
+        android:contentDescription="@string/green_button" />
 
-        <TextView
-            android:id="@+id/textView3"
-            android:text="ВОЙТИ"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="80dp"
-            android:layout_marginTop="76dp"
-            android:layout_marginEnd="80dp"
-            android:fontFamily="@font/alegreyasansbold"
-            android:textColor="#3D3D3D"
-            android:textSize="20sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@id/forgetPassword" />
+    <TextView
+        android:id="@+id/textView3"
+        android:text="@string/enter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="76dp"
+        android:layout_marginEnd="80dp"
+        android:fontFamily="@font/alegreyasansbold"
+        android:textColor="#3D3D3D"
+        android:textSize="25sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/forgetPassword" />
 
     <ImageButton
         android:id="@+id/register"
-        android:layout_width="190sp"
-        android:layout_height="60sp"
+        android:layout_width="220sp"
+        android:layout_height="70sp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="80dp"
         android:layout_marginEnd="20dp"
@@ -149,11 +174,12 @@
         android:gravity="center"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/signIn" />
+        app:layout_constraintTop_toTopOf="@id/signIn"
+        android:contentDescription="@string/yellow_button" />
 
     <TextView
         android:id="@+id/textView4"
-        android:text="РЕГИСТРАЦИЯ"
+        android:text="@string/registration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="80dp"
@@ -161,7 +187,7 @@
         android:layout_marginEnd="80dp"
         android:fontFamily="@font/alegreyasansbold"
         android:textColor="#3D3D3D"
-        android:textSize="20sp"
+        android:textSize="25sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/signIn" />
