@@ -12,4 +12,7 @@
     <string name="enter">ВОЙТИ</string>
     <string name="yellow_button">Yellow button</string>
     <string name="registration">РЕГИСТРАЦИЯ</string>
+    <string name="recording">ЗАПИСЬ ЗВУКА</string>
+    <string name="name_of_audio">НАЗВАНИЕ</string>
+    <string name="timer">0:00</string>
 </resources>
