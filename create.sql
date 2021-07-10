@@ -1,19 +1,19 @@
-create database audio;
-use audio;
+CREATE DATABASE audio;
+USE audio;
 
-create table users
+CREATE TABLE users
 (
-    user_id  int not null auto_increment,
-    login    varchar(40) not null ,
-    password varchar(40) not null ,
-    primary key (user_id)
+    user_id  INT NOT NULL AUTO_INCREMENT,
+    login    VARCHAR(40) NOT NULL ,
+    password VARCHAR(40) NOT NULL ,
+    PRIMARY KEY (user_id)
 );
 
-create table records
+CREATE TABLE records
 (
-    record_id int not null auto_increment,
-    user_id int not null ,
-    path varchar(255),
-    primary key (record_id),
-    foreign key (user_id) references users(user_id)
+    record_id  INT NOT NULL AUTO_INCREMENT,
+    user_id  INT NOT NULL ,
+    path VARCHAR(255),
+    PRIMARY KEY  (record_id),
+    FOREIGN KEY  (user_id) REFERENCES users(user_id)
 );
