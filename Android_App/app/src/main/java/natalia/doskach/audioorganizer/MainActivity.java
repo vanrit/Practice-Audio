@@ -5,13 +5,17 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -26,12 +30,14 @@ import android.widget.PopupMenu;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
-
+    MediaPlayer mediaPlayer;
     ArrayList<Audio> audios;
     AudioListAdapter a;
     RecyclerView list;
@@ -48,16 +54,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        resetPlayingTune();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.sound);
         audios = new ArrayList<>();
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
-        audios.add(new Audio("woof","dog",10,"woof.mp3",false));
+        audios.add(new Audio("woof","dog",10,"",false));
+        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test1.m4a",true));
+
+        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test2.m4a",true));
+
+        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test3.m4a",true));
+
+        audios.add(new Audio("woof","dog",10,"",false));
+
+        audios.add(new Audio("woof","dog",10,"3",false));
+        audios.add(new Audio("woof","dog",100,"",false));
+
+        audios.add(new Audio("woof","dog",100,"3",false));
         list = findViewById(R.id.audioList);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
+                LinearLayoutManager.VERTICAL);
+        dividerItemDecoration.setDrawable(list.getContext().getResources().getDrawable(R.drawable.sk_line_divider));
+        list.addItemDecoration(dividerItemDecoration);
         a = new AudioListAdapter(audios);
         list.setAdapter(a);
         list.setLayoutManager(new LinearLayoutManager(this));
@@ -69,6 +88,13 @@ public class MainActivity extends AppCompatActivity {
                 showPopupMenu(v);
             }
         });
+    }
+
+    private void resetPlayingTune() {
+        SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(String.valueOf((R.string.playing_tune)), -1);
+        editor.apply();
     }
 
     private void showPopupMenu(View v) {
@@ -134,4 +160,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void synchronize(MenuItem item) {
     }
+
+    public void playTune() {
+        Log.i("play","tune");
+        mediaPlayer.start();
+    }
+
+    public void pauseTune() {
+        Log.i("pause","tune");
+        if(mediaPlayer.isPlaying())
+        mediaPlayer.stop();
+        mediaPlayer.seekTo(0);
+    }
+
+
 }

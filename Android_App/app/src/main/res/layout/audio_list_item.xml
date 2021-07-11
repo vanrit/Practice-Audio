@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/itemCard"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -13,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="2dp"
         android:layout_marginStart="223dp"
+        android:fontFamily="@font/alegreyasansbold"
         android:ellipsize="end"
         android:maxLines="1"
 
@@ -22,7 +24,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/playBtn"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -32,10 +34,11 @@
         android:layout_margin="2dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:fontFamily="@font/alegreyasansrregular"
         android:text="author"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/playBtn"
         app:layout_constraintTop_toBottomOf="@+id/nameTW" />
 
     <TextView
@@ -45,10 +48,11 @@
         android:layout_margin="2dp"
         android:ellipsize="end"
         android:maxLines="1"
+        android:fontFamily="@font/alegreyasansrregular"
         android:text="0:00"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/playBtn"
         app:layout_constraintTop_toBottomOf="@+id/authorTW" />
 
     <ImageButton
@@ -61,6 +65,17 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/playBtn"
+        android:layout_width="55dp"
+        android:layout_height="67dp"
+        android:layout_gravity="left"
+        android:layout_marginStart="4dp"
+        android:background="@null"
+        android:text="Button"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 

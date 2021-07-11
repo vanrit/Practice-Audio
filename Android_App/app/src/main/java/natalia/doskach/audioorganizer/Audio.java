@@ -12,6 +12,5 @@ public class Audio {
         this.len = length;
         this.path = path;
         this.isDownloaded = isDownloaded;
-
     }
 }
