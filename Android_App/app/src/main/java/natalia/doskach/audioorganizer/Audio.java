@@ -2,6 +2,7 @@ package natalia.doskach.audioorganizer;
 
 public class Audio {
     public String name;
+    public int ID;
     public String author;
     public int len;
     public boolean isDownloaded;

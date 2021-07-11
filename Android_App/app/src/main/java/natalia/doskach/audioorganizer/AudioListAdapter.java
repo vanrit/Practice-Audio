@@ -196,11 +196,12 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     }
 
     private void stopTune(ViewHolder viewHolder, View v, int position) {
-        ((MainActivity)v.getContext()).playTune();
+        ((MainActivity)v.getContext()).pauseTune(position);
     }
 
     private void playTune(ViewHolder viewHolder, View v, int position) {
-        ((MainActivity)v.getContext()).pauseTune();
+        viewHolder.getPlayBtn().setImageResource(R.drawable.ic_pause_circle_48);
+        ((MainActivity)v.getContext()).playTune(localDataSet.get(position).path);
     }
 
 

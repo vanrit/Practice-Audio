@@ -29,9 +29,16 @@ import android.widget.PopupMenu;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,10 +64,17 @@ public class MainActivity extends AppCompatActivity {
         resetPlayingTune();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.sound);
+        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.soundWSS);
+        if(savedInstanceState != null){
+            Log.i("info","got data");
+            String data = savedInstanceState.getString("audios");
+            audios = new Gson().fromJson(data, new TypeToken<List<Audio>>(){}.getType());;
+        }
+        else{
+            Log.i("info","no data");
         audios = new ArrayList<>();
-        audios.add(new Audio("woof","dog",10,"",false));
-        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test1.m4a",true));
+        audios.add(new Audio("A","unknown",10,"",false));
+        audios.add(new Audio("B","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
 
         audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test2.m4a",true));
 
@@ -72,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         audios.add(new Audio("woof","dog",100,"",false));
 
         audios.add(new Audio("woof","dog",100,"3",false));
+        }
         list = findViewById(R.id.audioList);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
                 LinearLayoutManager.VERTICAL);
@@ -88,6 +103,54 @@ public class MainActivity extends AppCompatActivity {
                 showPopupMenu(v);
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        String filename = "data";
+        String fileContents = new Gson().toJson(audios);
+        try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
+            fos.write(fileContents.getBytes());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String contents;
+        FileInputStream fis = null;
+        try {
+            fis = getApplicationContext().openFileInput("data");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        InputStreamReader inputStreamReader =
+                new InputStreamReader(fis, StandardCharsets.UTF_8);
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+            String line = reader.readLine();
+            while (line != null) {
+                stringBuilder.append(line).append('\n');
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            // Error occurred when opening raw file for reading.
+        } finally {
+            contents = stringBuilder.toString();
+        }
+        audios = new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType());;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        Log.i("info","save all data");
+        super.onSaveInstanceState(outState);
+        outState.putString("audios", new Gson().toJson(audios));
     }
 
     private void resetPlayingTune() {
@@ -161,12 +224,15 @@ public class MainActivity extends AppCompatActivity {
     public void synchronize(MenuItem item) {
     }
 
-    public void playTune() {
+    public void playTune(String path) {
         Log.i("play","tune");
         mediaPlayer.start();
     }
 
-    public void pauseTune() {
+    public void pauseTune(int position) {
+        View v = list.getLayoutManager().findViewByPosition(position);
+        ImageButton playBtn = (ImageButton) v.findViewById(R.id.playBtn);
+        playBtn.setImageResource(R.drawable.ic_play_circle_48);
         Log.i("pause","tune");
         if(mediaPlayer.isPlaying())
         mediaPlayer.stop();
