@@ -17,6 +17,7 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.ViewHolder> {
@@ -125,8 +126,13 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 
         viewHolder.getPlayBtn().setOnClickListener(new View.OnClickListener() {
                                                        public void onClick(View v) {
-                                                           if (localDataSet.get(position).isDownloaded)
-                                                               playSong(viewHolder, v, position);
+                                                           if (localDataSet.get(position).isDownloaded) {
+                                                               try {
+                                                                   playSong(viewHolder, v, position);
+                                                               } catch (IOException e) {
+                                                                   e.printStackTrace();
+                                                               }
+                                                           }
                                                            else
                                                                downloadSong(viewHolder, v, position);
 
@@ -176,7 +182,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);
     }
 
-    private void playSong(ViewHolder viewHolder, View v, final int position) {
+    private void playSong(ViewHolder viewHolder, View v, final int position) throws IOException {
         if(playingTune==-1){ //start playing music
             Log.i("info","start playing music pos:"+position+" pt:"+playingTune);
             playingTune = position;
@@ -199,7 +205,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         ((MainActivity)v.getContext()).pauseTune(position);
     }
 
-    private void playTune(ViewHolder viewHolder, View v, int position) {
+    private void playTune(ViewHolder viewHolder, View v, int position) throws IOException {
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_pause_circle_48);
         ((MainActivity)v.getContext()).playTune(localDataSet.get(position).path);
     }

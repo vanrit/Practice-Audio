@@ -15,8 +15,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,11 +37,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +70,13 @@ public class MainActivity extends AppCompatActivity {
         resetPlayingTune();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.soundWSS);
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+        );
         if(savedInstanceState != null){
             Log.i("info","got data");
             String data = savedInstanceState.getString("audios");
@@ -127,8 +139,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             fis = getApplicationContext().openFileInput("data");
         } catch (FileNotFoundException e) {
+            Log.i("info","file not found");
             e.printStackTrace();
         }
+        if(fis!=null){
         InputStreamReader inputStreamReader =
                 new InputStreamReader(fis, StandardCharsets.UTF_8);
         StringBuilder stringBuilder = new StringBuilder();
@@ -143,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         } finally {
             contents = stringBuilder.toString();
         }
-        audios = new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType());;
+        audios = new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType());}
     }
 
     @Override
@@ -185,6 +199,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void importFromFile(View view) {
+        File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        File f = new File(path,"Test1.mp4");
+
     }
 
     public void openTelegramImport(View view) {
@@ -224,8 +241,19 @@ public class MainActivity extends AppCompatActivity {
     public void synchronize(MenuItem item) {
     }
 
-    public void playTune(String path) {
+    public void playTune(String path) throws IOException {
         Log.i("play","tune");
+        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.t1);
+//        File fPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+//        File f = new File(fPath,"Test1.m4a");
+//        String[] li = fPath.list();
+//        for (String item:li
+//             ) {
+//          Log.i("file",item);
+//        }
+//        FileInputStream is = new FileInputStream(f);
+//        mediaPlayer.setDataSource(is.getFD());
+//        mediaPlayer.prepare();
         mediaPlayer.start();
     }
 
@@ -235,8 +263,8 @@ public class MainActivity extends AppCompatActivity {
         playBtn.setImageResource(R.drawable.ic_play_circle_48);
         Log.i("pause","tune");
         if(mediaPlayer.isPlaying())
-        mediaPlayer.stop();
-        mediaPlayer.seekTo(0);
+        mediaPlayer.pause();
+//        mediaPlayer.seekTo(0);
     }
 
 
