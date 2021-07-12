@@ -2,7 +2,9 @@ package natalia.doskach.audioorganizer;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.util.Log;
@@ -10,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -24,6 +28,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 
     private ArrayList<Audio> localDataSet;
     private int playingTune = -1;
+    AlertDialog dialog;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -160,12 +165,19 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                         switch (item.getItemId()) {
                             case R.id.renameBtn:
                                 Log.i("info","rename");
+                                renameItem(position,v);
                                 return true;
                             case R.id.downloadRemoveBtn:
                                 Log.i("info","download/remove");
+                                if(!localDataSet.get(position).isDownloaded)
+                                    downloadSong(viewHolder,v,position);
+                                else{
+                                    removeFile(position, viewHolder);
+                                }
                                 return true;
                             case R.id.deleteBtn:
                                 Log.i("info","delete");
+                                deleteItem(position);
                                 return true;
                             default:
                                 return false;
@@ -176,9 +188,51 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         popupMenu.show();
     }
 
+    private void removeFile(int position, ViewHolder viewHolder) {
+        //TODO: remove File and delete item if not on server
+        Log.i("info","remove song");
+        localDataSet.get(position).isDownloaded = false;
+        notifyItemChanged(position);
+        viewHolder.getPlayBtn().setImageResource(R.drawable.ic_arrow_circle_down_48);
+    }
+
+    private void deleteItem(int position) {
+        localDataSet.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    private void renameItem(int position, View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(((Activity)v.getContext()));
+        builder.setTitle(R.string.dialog_title);
+        LayoutInflater inflater = ((Activity)v.getContext()).getLayoutInflater();
+        View moduleWindow = inflater.inflate(R.layout.dialog_rename, null);
+        builder.setView(moduleWindow);
+        EditText form= (EditText) moduleWindow.findViewById(R.id.renameET);
+        form.setText(localDataSet.get(position).name);
+        Button yesButton= (Button) moduleWindow.findViewById(R.id.YESbutton);
+        Button noButton= (Button) moduleWindow.findViewById(R.id.NObutton);
+        yesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // User clicked OK button
+                String text = form.getText().toString();
+                localDataSet.get(position).name = text;
+                notifyItemChanged(position);
+                dialog.dismiss();
+            }});
+        noButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }});
+        dialog = builder.show();
+
+    }
+
     private void downloadSong(ViewHolder viewHolder, View v, int position) {
         Log.i("info","download song");
         localDataSet.get(position).isDownloaded = true;
+        notifyItemChanged(position);
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);
     }
 

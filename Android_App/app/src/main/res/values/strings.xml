@@ -16,4 +16,7 @@
     <string name="name_of_audio">НАЗВАНИЕ</string>
     <string name="timer">0:00</string>
     <string name="playing_tune">playing_tune</string>
+    <string name="dialog_title">Переименовать</string>
+    <string name="ok">Ок</string>
+    <string name="cancel">Отменить</string>
 </resources>
