@@ -1,12 +1,16 @@
 package natalia.doskach.audioorganizer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.view.View;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -30,6 +34,8 @@ public class RecordAudioActivity extends AppCompatActivity {
     Chronometer chronometer;
 
     private static String fileName;
+    private int PERMISSION_CODE = 15;
+    private String recordPermission = Manifest.permission.RECORD_AUDIO;
     private MediaRecorder recorder;
     boolean isRecording;
 
@@ -44,7 +50,27 @@ public class RecordAudioActivity extends AppCompatActivity {
 
         isRecording = false;
 
-        askRuntimePermission();
+        buttonRec.setOnClickListener(v -> {
+            if (isRecording) {
+                recordStop();
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                chronometer.stop();
+                isRecording = false;
+            } else {
+//                if (askRuntimePermission()) {
+                    try {
+                        recordStart();
+                        chronometer.setBase(SystemClock.elapsedRealtime());
+                        chronometer.start();
+                        isRecording = true;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "Невозможно записать", Toast.LENGTH_SHORT).show();
+                    }
+//                }
+            }
+        });
+
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
         String date = format.format(new Date());
         fileName = path + "/recording_" + date + ".amr";
@@ -52,63 +78,100 @@ public class RecordAudioActivity extends AppCompatActivity {
         if (!path.exists()) {
             path.mkdirs();
         }
-
-        buttonRec.setOnClickListener(v -> {
-            if (!isRecording) {
-                try {
-                    startRecording();
-                    chronometer.setBase(SystemClock.elapsedRealtime());
-                    chronometer.start();
-                    isRecording = true;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Невозможно записать", Toast.LENGTH_SHORT).show();
-                }
-            } else if (isRecording) {
-                stopRecording();
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.stop();
-                isRecording = false;
-            }
-        });
     }
 
-    private void startRecording() {
-        recorder = new MediaRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
-        recorder.setOutputFile(fileName);
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
+    public void recordStart() {
         try {
+            releaseRecorder();
+
+            File outFile = new File(fileName);
+            if (outFile.exists()) {
+                outFile.delete();
+            }
+
+            recorder = new MediaRecorder();
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            recorder.setOutputFile(fileName);
             recorder.prepare();
-        } catch (IOException e) {
+            recorder.start();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        recorder.start();
     }
 
-    private void stopRecording() {
-        recorder.stop();
-        recorder.release();
-        recorder = null;
+    public void recordStop() {
+        if (recorder != null) {
+            recorder.stop();
+        }
     }
 
-    private void askRuntimePermission() {
-
-        Dexter.withContext(getApplicationContext()).withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.RECORD_AUDIO).withListener(new MultiplePermissionsListener() {
-            @Override
-            public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
-                Toast.makeText(getApplicationContext(), "", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
-                permissionToken.continuePermissionRequest();
-            }
-        }).check();
+    private void releaseRecorder() {
+        if (recorder != null) {
+            recorder.release();
+            recorder = null;
+        }
     }
+
+    private void releasePlayer() {
+        if (recorder != null) {
+            recorder.release();
+            recorder = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releasePlayer();
+        releaseRecorder();
+    }
+
+//    private void startRecording() {
+//        recorder = new MediaRecorder();
+//        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+//        recorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
+//        recorder.setOutputFile(fileName);
+//        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+//
+//        try {
+//            recorder.prepare();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        recorder.start();
+//    }
+//
+//    private void stopRecording() {
+//        recorder.stop();
+//        recorder.release();
+//        recorder = null;
+//    }
+//
+//    private boolean askRuntimePermission() {
+//
+//        if (ActivityCompat.checkSelfPermission(getBaseContext(), recordPermission) == PackageManager.PERMISSION_GRANTED)
+//            return true;
+//        else {
+//            ActivityCompat.requestPermissions(getParent(), new String[]{recordPermission}, PERMISSION_CODE);
+//            return false;
+//        }
+
+//        Dexter.withContext(getApplicationContext()).withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                Manifest.permission.RECORD_AUDIO).withListener(new MultiplePermissionsListener() {
+//            @Override
+//            public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
+//                Toast.makeText(getApplicationContext(), "Разрешено", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
+//                permissionToken.continuePermissionRequest();
+//            }
+//        }).check();
+//    }
 }
