@@ -132,5 +132,6 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-tx:5.3.5" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-aspects:5.3.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: mysql:mysql-connector-java:8.0.23" level="project" />
+    <orderEntry type="library" name="Maven: org:jaudiotagger:2.0.3" level="project" />
   </component>
 </module>

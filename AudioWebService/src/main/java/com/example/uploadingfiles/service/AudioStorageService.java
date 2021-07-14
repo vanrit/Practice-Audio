@@ -34,6 +34,10 @@ public class AudioStorageService implements StorageService {
 		this.rootLocation = Paths.get(properties.getLocation());
 	}
 
+	public Path getRootLocation() {
+		return rootLocation;
+	}
+
 	@Override
 	public void store(MultipartFile file) {
 		try {

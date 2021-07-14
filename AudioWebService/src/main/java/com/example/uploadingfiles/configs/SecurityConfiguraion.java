@@ -48,7 +48,7 @@ public class SecurityConfiguraion extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/signup").permitAll()
+                .antMatchers("/signup", "/").permitAll()
                 .anyRequest().authenticated()
                 .and()
                     .exceptionHandling().defaultAuthenticationEntryPointFor(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),

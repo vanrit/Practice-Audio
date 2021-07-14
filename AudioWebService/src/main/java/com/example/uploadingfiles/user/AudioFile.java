@@ -1,44 +1,114 @@
 package com.example.uploadingfiles.user;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.annotation.Reference;
 
 import javax.persistence.*;
+import java.sql.Time;
 
 @Entity
-@Table(name = "audios")
+@Table(name = "records")
 public class AudioFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long audioId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "record_id")
+    private Long recordId;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column
-    private String username;
+    private String path;
+
+    @Column(name = "record_name")
+    private String recordName;
 
     @Column
-    private String fileName;
+    private Time duration;
 
-    public Long getAudioId() {
-        return audioId;
+    @Column
+    private String source;
+
+    @Column(name = "source_id")
+    private Long sourceId;
+
+    @Column(name = "source_author")
+    private String sourceAuthor;
+
+    public AudioFile(Long userId, String path, String recordName, Time duration, String source, Long sourceId, String sourceAuthor) {
+        this.userId = userId;
+        this.path = path;
+        this.recordName = recordName;
+        this.duration = duration;
+        this.source = source;
+        this.sourceId = sourceId;
+        this.sourceAuthor = sourceAuthor;
     }
 
-    public void setAudioId(Long audioID) {
-        this.audioId = audioID;
+    public AudioFile(){}
+
+    public Long getRecordId() {
+        return recordId;
     }
 
-    public String getUsername() {
-        return username;
+    public void setRecordId(Long record) {
+        this.recordId = record;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public Long getUserId() {
+        return userId;
     }
 
-    public String getFileName() {
-        return fileName;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getRecordName() {
+        return recordName;
+    }
+
+    public void setRecordName(String recordName) {
+        this.recordName = recordName;
+    }
+
+    public Time getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Time duration) {
+        this.duration = duration;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public String getSourceAuthor() {
+        return sourceAuthor;
+    }
+
+    public void setSourceAuthor(String sourceAuthor) {
+        this.sourceAuthor = sourceAuthor;
     }
 }
