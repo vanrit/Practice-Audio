@@ -4,11 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -21,6 +23,7 @@ public class RecordAudioActivity extends AppCompatActivity {
 
     private static final String TAG = "111";
     ImageButton buttonRec;
+    ImageButton backBtn;
     Chronometer chronometer;
 
     private EditText editText;
@@ -32,10 +35,16 @@ public class RecordAudioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_audio);
         buttonRec = findViewById(R.id.register);
+        backBtn = findViewById(R.id.back);
         chronometer = findViewById(R.id.timer);
         editText = (EditText)findViewById(R.id.editAudioName);
 
         isRecording = false;
+
+        backBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(RecordAudioActivity.this, MainActivity.class);
+            startActivity(intent);
+        });
 
         buttonRec.setOnClickListener(v -> {
             if (isRecording) {
