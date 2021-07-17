@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openTelegramImport(View view) {
-        Log.i("info","import from telegram");
+        audioActivityResultLauncher.launch(new Intent(this, TelegramActivity.class));
     }
 
     public void openWhatsAppImport(View view) {

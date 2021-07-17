@@ -2,12 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="natalia.doskach.audioorganizer">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE">
-
-    </uses-permission>
-    <uses-permission android:name="android.permission.RECORD_AUDIO">
-
-    </uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
 
     <application
         android:allowBackup="true"
@@ -16,7 +12,8 @@
         android:roundIcon="@drawable/colorwave"
         android:supportsRtl="true"
         android:theme="@style/Theme.AudioOrganizer">
-        <activity android:name=".RecordAudioActivity"></activity>
+        <activity android:name=".TelegramActivity"></activity>
+        <activity android:name=".RecordAudioActivity" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
