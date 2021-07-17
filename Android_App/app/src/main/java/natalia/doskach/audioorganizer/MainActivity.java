@@ -51,7 +51,7 @@ import java.util.List;
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
-    ArrayList<Audio> audios;
+    static ArrayList<Audio> audios;
     AudioListAdapter a;
     RecyclerView list;
     ImageButton menuBtn;

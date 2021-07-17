@@ -10,7 +10,6 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.View;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -25,6 +24,7 @@ public class RecordAudioActivity extends AppCompatActivity {
     ImageButton buttonRec;
     ImageButton backBtn;
     Chronometer chronometer;
+    String recordFile;
 
     private EditText editText;
     private MediaRecorder recorder;
@@ -37,7 +37,7 @@ public class RecordAudioActivity extends AppCompatActivity {
         buttonRec = findViewById(R.id.register);
         backBtn = findViewById(R.id.back);
         chronometer = findViewById(R.id.timer);
-        editText = (EditText)findViewById(R.id.editAudioName);
+        editText = findViewById(R.id.editAudioName);
 
         isRecording = false;
 
@@ -52,6 +52,7 @@ public class RecordAudioActivity extends AppCompatActivity {
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 chronometer.stop();
                 isRecording = false;
+                MainActivity.audios.add(new Audio(recordFile, "unknown",10,"",false));
             } else {
                 if (askRuntimePermission()) {
                     try {
@@ -89,7 +90,7 @@ public class RecordAudioActivity extends AppCompatActivity {
         Date now = new Date();
 
         String fileName = editText.getText().toString();
-        String recordFile = "Recording_" + format.format(now) + ".amr";
+        recordFile = "Recording_" + format.format(now) + ".amr";
 
         if (!fileName.isEmpty()) recordFile = fileName + ".amr";
 
