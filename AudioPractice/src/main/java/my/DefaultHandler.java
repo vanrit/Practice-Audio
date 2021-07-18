@@ -28,10 +28,10 @@ class DefaultHandler implements ResultHandler {
                     String strDate = formatter.format(date);
                     int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
 
-                    TdApi.GetUser user = new TdApi.GetUser(senderID);
-                    Example.client.send(user, this);
-
                     if (message.content instanceof TdApi.MessageVoiceNote) {
+                        TdApi.GetUser user = new TdApi.GetUser(senderID);
+                        Example.client.send(user, this);
+
                         TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
                         System.out.println("Audio with id " + voice.voiceNote.voice.id + ", date " + strDate + ", sender " + senderID);
                     }
