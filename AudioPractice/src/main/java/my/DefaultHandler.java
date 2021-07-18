@@ -3,15 +3,15 @@ package my;
 import it.tdlight.common.ResultHandler;
 import it.tdlight.jni.TdApi;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 class DefaultHandler implements ResultHandler {
+
     @Override
     public void onResult(TdApi.Object object) {
         if (object instanceof TdApi.File) {
-            if(((TdApi.File) object).local.path.equals("")){
+            if (((TdApi.File) object).local.path.equals("")) {
                 return;
             }
             System.out.println("Audio was saved here: " + ((TdApi.File) object).local.path);
@@ -22,18 +22,26 @@ class DefaultHandler implements ResultHandler {
                 return;
             } else {
                 TdApi.Messages messages = (TdApi.Messages) object;
-                for(TdApi.Message message: messages.messages){
-                    Date date = new java.util.Date(message.date*1000L);
+                for (TdApi.Message message : messages.messages) {
+                    Date date = new java.util.Date(message.date * 1000L);
                     SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    String strDate= formatter.format(date);
-                    int senderID = ((TdApi.MessageSenderUser)message.sender).userId;
-                    if(message.content instanceof TdApi.MessageVoiceNote){
+                    String strDate = formatter.format(date);
+                    int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
+
+                    TdApi.GetUser user = new TdApi.GetUser(senderID);
+                    Example.client.send(user, this);
+
+                    if (message.content instanceof TdApi.MessageVoiceNote) {
                         TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
-                        System.out.println("Audio with id "+ voice.voiceNote.voice.id +", date "+ strDate +", sender "+senderID);
+                        System.out.println("Audio with id " + voice.voiceNote.voice.id + ", date " + strDate + ", sender " + senderID);
                     }
                 }
                 return;
             }
+        }
+        if (object instanceof TdApi.User) {
+            System.out.println("I am user " + ((TdApi.User) object).username);
+            return;
         }
         Example.print(object.toString());
     }

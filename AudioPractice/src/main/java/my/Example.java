@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 public final class Example {
-    private static TelegramClient client = null;
+    public static TelegramClient client = null;
 
     private static TdApi.AuthorizationState authorizationState = null;
     private static volatile boolean haveAuthorization = false;
