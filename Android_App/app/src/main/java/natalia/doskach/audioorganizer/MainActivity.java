@@ -1,7 +1,5 @@
 package natalia.doskach.audioorganizer;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,26 +8,27 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.DocumentsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -43,18 +42,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import natalia.doskach.audioorganizer.telegram.TelegramActivity;
+
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
-    static ArrayList<Audio> audios;
+    static AudiosList audios;
     AudioListAdapter a;
     RecyclerView list;
     ImageButton menuBtn;
+    com.google.android.material.textfield.TextInputEditText input;
     boolean isFloatingMenuOpen = false;
     ActivityResultLauncher<Intent> audioActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -80,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
         if(savedInstanceState != null){
             Log.i("info","got data");
             String data = savedInstanceState.getString("audios");
-            audios = new Gson().fromJson(data, new TypeToken<List<Audio>>(){}.getType());;
+            audios.changeData(new Gson().fromJson(data, new TypeToken<List<Audio>>(){}.getType()));
         }
         else{
             Log.i("info","no data");
-        audios = new ArrayList<>();
+        audios = new AudiosList();
         audios.add(new Audio("A","unknown",10,"",false));
         audios.add(new Audio("B","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
 
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayoutManager.VERTICAL);
         dividerItemDecoration.setDrawable(list.getContext().getResources().getDrawable(R.drawable.sk_line_divider));
         list.addItemDecoration(dividerItemDecoration);
-        a = new AudioListAdapter(audios);
+        a = new AudioListAdapter(audios.getAudios());
         list.setAdapter(a);
         list.setLayoutManager(new LinearLayoutManager(this));
         a.notifyDataSetChanged();
@@ -115,13 +116,42 @@ public class MainActivity extends AppCompatActivity {
                 showPopupMenu(v);
             }
         });
+        input = findViewById(R.id.input);
+        input.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable s) {}
+
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                Log.i("TEXT","CHANGED");
+                String value = ((EditText)input).getText().toString();
+                a.getFilter().filter(value);
+            }
+        });
+        input.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if(actionId== EditorInfo.IME_ACTION_DONE){
+                    Log.i("info","finished writing");
+                    getWindow().setSoftInputMode(
+                            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                    );
+
+                }
+                return false;
+            }
+        });
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         String filename = "data";
-        String fileContents = new Gson().toJson(audios);
+        String fileContents = new Gson().toJson(audios.getAudios());
         try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
             fos.write(fileContents.getBytes());
         } catch (FileNotFoundException e) {
@@ -157,14 +187,14 @@ public class MainActivity extends AppCompatActivity {
         } finally {
             contents = stringBuilder.toString();
         }
-        audios = new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType());}
+        audios.changeData(new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType()));}
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState){
         Log.i("info","save all data");
         super.onSaveInstanceState(outState);
-        outState.putString("audios", new Gson().toJson(audios));
+        outState.putString("audios", new Gson().toJson(audios.getAudios()));
     }
 
     private void resetPlayingTune() {
@@ -201,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
     public void importFromFile(View view) {
         File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         File f = new File(path,"Test1.mp4");
-
     }
 
     public void openTelegramImport(View view) {

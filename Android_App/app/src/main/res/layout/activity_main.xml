@@ -28,23 +28,31 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textField"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_weight="1"
             app:boxStrokeWidth="0dp"
             app:boxStrokeWidthFocused="0dp"
+            android:padding="0dp"
             app:layout_constraintEnd_toStartOf="@+id/overflow_menu"
             app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/button_panel"
             app:startIconDrawable="@drawable/ic_search"
             app:boxBackgroundMode="none">
-
             <com.google.android.material.textfield.TextInputEditText
+                app:layout_constraintTop_toTopOf="@id/textField"
+                android:id="@+id/input"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@null"
+                android:layout_margin="0dp"
                 android:inputType="text"
                 android:maxLines="1"
-                android:background="@null"/>
+                />
         </com.google.android.material.textfield.TextInputLayout>
+
+
 
         <ImageButton
             android:id="@+id/overflow_menu"
