@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <repositories>
+        <repository>
+            <id>mchv</id>
+            <name>MCHV Apache Maven Packages</name>
+            <url>https://mvn.mchv.eu/repository/mchv/</url>
+        </repository>
+    </repositories>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>AudioPractice</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>it.tdlight</groupId>
+            <artifactId>tdlib-java</artifactId>
+            <version>4.171.128</version>
+        </dependency>
+        <dependency>
+            <groupId>it.tdlight</groupId>
+            <artifactId>tdlib-natives-windows-amd64</artifactId>
+            <version>3.3.55</version>
+        </dependency>
+        <!-- include other native versions that you want, for example for macos, windows, and other architectures here -->
+    </dependencies>
+</project>
