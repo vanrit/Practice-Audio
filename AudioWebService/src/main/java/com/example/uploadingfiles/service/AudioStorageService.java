@@ -39,25 +39,31 @@ public class AudioStorageService implements StorageService {
 	}
 
 	@Override
-	public void store(MultipartFile file) {
+	public void store(MultipartFile file, String scope) {
 		try {
 
-			String username = ((CustomUserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+			String folderName = "";
 
-			Path userDirectory = this.rootLocation.resolve(Paths.get(username));
+			if (scope.equals("private")) {
+				folderName = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+			}
+			else {
+				folderName = "public";
+			}
 
-			if (!userDirectory.toFile().exists()) {
-				Files.createDirectory(userDirectory);
+			Path saveDirectory = this.rootLocation.resolve(Paths.get(folderName));
+
+			if (!saveDirectory.toFile().exists()) {
+				Files.createDirectory(saveDirectory);
 			}
 
 			if (file.isEmpty()) {
 				throw new StorageException("Audio file is Empty!");
 			}
-			Path destinationFile = userDirectory.resolve(
+			Path destinationFile = saveDirectory.resolve(
 					Paths.get(file.getOriginalFilename()))
 					.normalize().toAbsolutePath();
-			if (!destinationFile.getParent().equals(userDirectory.toAbsolutePath())) {
-				// This is a security check
+			if (!destinationFile.getParent().equals(saveDirectory.toAbsolutePath())) {
 				throw new StorageException(
 						"Cannot store audio file outside current directory.");
 			}
@@ -71,32 +77,26 @@ public class AudioStorageService implements StorageService {
 		}
 	}
 
+
 	@Override
-	public Stream<Path> loadAll() {
-		try {
-			return Files.walk(this.rootLocation, 2)
-				.filter(path -> !path.equals(this.rootLocation))
-				.map(this.rootLocation::relativize);
+	public Path load(String recordName, String scope) {
+
+		Path loadDirectory;
+		if (scope.equals("private")) {
+			String username = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+			loadDirectory = this.rootLocation.resolve(Paths.get(username));
 		}
-		catch (IOException e) {
-			throw new StorageException("Failed to read stored files", e);
+		else {
+			loadDirectory = this.rootLocation.resolve(Paths.get("public"));
 		}
 
+		return loadDirectory.resolve(recordName);
 	}
 
 	@Override
-	public Path load(String filename) {
-
-		String username = ((CustomUserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-		Path userDirectory = this.rootLocation.resolve(Paths.get(username));
-
-		return userDirectory.resolve(filename);
-	}
-
-	@Override
-	public Resource loadAsResource(String filename) {
+	public Resource loadAsResource(String filename, String scope) {
 		try {
-			Path file = load(filename);
+			Path file = load(filename, scope);
 			Resource resource = new UrlResource(file.toUri());
 			if (resource.exists() || resource.isReadable()) {
 				return resource;

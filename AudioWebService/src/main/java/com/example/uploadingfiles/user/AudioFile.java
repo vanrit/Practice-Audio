@@ -21,6 +21,9 @@ public class AudioFile {
     @Column
     private String path;
 
+    @Column
+    private String scope;
+
     @Column(name = "record_name")
     private String recordName;
 
@@ -36,7 +39,7 @@ public class AudioFile {
     @Column(name = "source_author")
     private String sourceAuthor;
 
-    public AudioFile(Long userId, String path, String recordName, Time duration, String source, Long sourceId, String sourceAuthor) {
+    public AudioFile(Long userId, String path, String recordName, Time duration, String source, Long sourceId, String sourceAuthor, String scope) {
         this.userId = userId;
         this.path = path;
         this.recordName = recordName;
@@ -44,6 +47,7 @@ public class AudioFile {
         this.source = source;
         this.sourceId = sourceId;
         this.sourceAuthor = sourceAuthor;
+        this.scope = scope;
     }
 
     public AudioFile(){}
@@ -110,5 +114,13 @@ public class AudioFile {
 
     public void setSourceAuthor(String sourceAuthor) {
         this.sourceAuthor = sourceAuthor;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 }

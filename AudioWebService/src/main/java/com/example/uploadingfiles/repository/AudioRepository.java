@@ -11,15 +11,26 @@ import java.util.List;
 
 public interface AudioRepository extends JpaRepository<AudioFile, Long> {
     @Query("SELECT audioFile FROM AudioFile audioFile WHERE audioFile.userId = ?1 and audioFile.recordName = ?2")
-    AudioFile findBydUserIdAndFileName(Long userId, String fileName);
+    AudioFile findBydUserIdAndRecordName(Long userId, String recordName);
 
     @Query("SELECT audioFile FROM AudioFile audioFile WHERE audioFile.userId = ?1 and audioFile.recordId = ?2")
     AudioFile findByUserIDAAndRecordId(Long userId, Long recordId);
 
+    @Query("SELECT audioFile FROM AudioFile audioFile WHERE audioFile.recordName = ?1 and audioFile.scope = ?2")
+    AudioFile findByRecordNameAndScope(String recordName, String scope);
+
+    @Query("SELECT audioFile FROM AudioFile audioFile WHERE audioFile.scope = ?1")
+    List<AudioFile> findByScope(String scope);
+
     @Query("DELETE FROM AudioFile audioFile where audioFile.recordId = ?1 and audioFile.userId = ?2")
     @Modifying
     @Transactional
-    void deleteById(Long recordId, Long userId);
+    void deleteRecordById(Long recordId, Long userId);
+
+    @Query("DELETE FROM AudioFile audioFile where audioFile.userId = ?1")
+    @Modifying
+    @Transactional
+    void deleteAllByUserId(Long userId);
 
     @Query("SELECT audioFile FROM AudioFile audioFile WHERE audioFile.userId = ?1")
     List<AudioFile> findAllByUserId(Long userId);
