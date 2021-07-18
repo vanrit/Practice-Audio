@@ -4,6 +4,8 @@ import it.tdlight.common.ResultHandler;
 import it.tdlight.jni.TdApi;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 class DefaultHandler implements ResultHandler {
     @Override
@@ -21,9 +23,13 @@ class DefaultHandler implements ResultHandler {
             } else {
                 TdApi.Messages messages = (TdApi.Messages) object;
                 for(TdApi.Message message: messages.messages){
+                    Date date = new java.util.Date(message.date*1000L);
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    String strDate= formatter.format(date);
+                    int senderID = ((TdApi.MessageSenderUser)message.sender).userId;
                     if(message.content instanceof TdApi.MessageVoiceNote){
                         TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
-                        System.out.println("Audio with id "+ voice.voiceNote.voice.id);
+                        System.out.println("Audio with id "+ voice.voiceNote.voice.id +", date "+ strDate +", sender "+senderID);
                     }
                 }
                 return;
