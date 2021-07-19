@@ -47,7 +47,6 @@ public class RecordAudioActivity extends AppCompatActivity {
 
         backBtn.setOnClickListener(v -> {
             Intent data = new Intent();
-            String text = "Result to be returned....";
 //---set the data to pass back---
             if(audio == null)
                 setResult(RESULT_CANCELED, data);

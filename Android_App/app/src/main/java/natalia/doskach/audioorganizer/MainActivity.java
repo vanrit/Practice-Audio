@@ -65,15 +65,7 @@ public class MainActivity extends AppCompatActivity {
                     // There are no request codes
                     Intent data = result.getData();
                     Audio au = (Audio)(data.getSerializableExtra("audio"));
-                    audios.add(au);
-                    a.notifyDataSetChanged();
-                    Log.i("GOT",au.name);
-                    Log.i("GOT2",au.path);
-                    try {
-                        playTune(au.path);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    a.addItem(au);
                 }
             });
 
@@ -97,19 +89,11 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             Log.i("info","no data");
-        audios.add(new Audio("A","unknown",10,"",false));
-        audios.add(new Audio("B","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
+        audios.add(new Audio("test1","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
 
-        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test2.m4a",true));
+        audios.add(new Audio("test2","unknown",10,"/storage/emulated/0/Download/Test2.m4a",true));
 
-        audios.add(new Audio("woof","dog",10,"/storage/emulated/0/Download/Test3.m4a",true));
-
-        audios.add(new Audio("woof","dog",10,"",false));
-
-        audios.add(new Audio("woof","dog",10,"3",false));
-        audios.add(new Audio("woof","dog",100,"",false));
-
-        audios.add(new Audio("woof","dog",100,"3",false));
+        audios.add(new Audio("test3","unknown",10,"/storage/emulated/0/Download/Test3.m4a",true));
         }
         list = findViewById(R.id.audioList);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
@@ -236,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openRecordAudio(View view) {
+        if(!mediaPlayer.isPlaying())
         audioActivityResultLauncher.launch(new Intent(this, RecordAudioActivity.class));
     }
 
@@ -245,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openTelegramImport(View view) {
+        if(!mediaPlayer.isPlaying())
         audioActivityResultLauncher.launch(new Intent(this, TelegramActivity.class));
     }
 
@@ -284,7 +270,8 @@ public class MainActivity extends AppCompatActivity {
     public void playTune(String path) throws IOException {
         Log.i("play","tune");
         Uri myUri = Uri.fromFile(new File(path));
-        MediaPlayer mediaPlayer = new MediaPlayer();
+        
+        mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioAttributes(
                 new AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -294,18 +281,6 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer.setDataSource(getApplicationContext(), myUri);
         mediaPlayer.prepare();
         mediaPlayer.start();
-  //      mediaPlayer = MediaPlayer.create((Activity)this, R.raw.t1);
-//        File fPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-//        File f = new File(fPath,"Test1.m4a");
-//        String[] li = fPath.list();
-//        for (String item:li
-//             ) {
-//          Log.i("file",item);
-//        }
-//        FileInputStream is = new FileInputStream(f);
-//        mediaPlayer.setDataSource(is.getFD());
-//        mediaPlayer.prepare();
- //       mediaPlayer.start();
     }
 
     public void pauseTune(int position) {
@@ -314,9 +289,9 @@ public class MainActivity extends AppCompatActivity {
         playBtn.setImageResource(R.drawable.ic_play_circle_48);
         Log.i("pause","tune");
         if(mediaPlayer.isPlaying())
-        mediaPlayer.pause();
+        mediaPlayer.stop();
+        mediaPlayer.release();
 //        mediaPlayer.seekTo(0);
     }
-
 
 }

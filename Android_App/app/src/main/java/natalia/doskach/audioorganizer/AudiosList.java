@@ -3,7 +3,7 @@ package natalia.doskach.audioorganizer;
 import java.util.ArrayList;
 
 public class AudiosList {
-    static ArrayList<Audio> audios;
+    public ArrayList<Audio> audios;
 
     public AudiosList(){
         audios = new ArrayList<>();

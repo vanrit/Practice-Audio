@@ -244,6 +244,12 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         filteredDataSet.remove(position);
         notifyItemRemoved(position);
     }
+    public void addItem(Audio a){
+        Log.i("audio","added");
+        filteredDataSet.add(a);
+        notifyItemInserted(getItemCount());
+
+    }
 
     private void renameItem(int position, View v) {
         AlertDialog.Builder builder = new AlertDialog.Builder(((Activity)v.getContext()));
@@ -289,17 +295,18 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         else if(playingTune==position){ //pause music
             Log.i("info","pause music pos:"+position+" pt:"+playingTune);
             playingTune = -1;
-            stopTune(viewHolder,v,position);
+            pauseTune(viewHolder,v,position);
         }
         else{ //change music
             Log.i("info","change music pos:"+position+" pt:"+playingTune);
-            stopTune(viewHolder,v,playingTune);
+            pauseTune(viewHolder,v,playingTune);
             playingTune = position;
             playTune(viewHolder,v, position);
         }
     }
 
-    private void stopTune(ViewHolder viewHolder, View v, int position) {
+
+    private void pauseTune(ViewHolder viewHolder, View v, int position) {
         ((MainActivity)v.getContext()).pauseTune(position);
     }
 
