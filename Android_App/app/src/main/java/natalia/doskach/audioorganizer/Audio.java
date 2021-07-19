@@ -1,6 +1,11 @@
 package natalia.doskach.audioorganizer;
 
-public class Audio {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.Serializable;
+
+public class Audio implements Serializable {
     public String name;
     public int ID;
     public String author;
@@ -14,4 +19,5 @@ public class Audio {
         this.path = path;
         this.isDownloaded = isDownloaded;
     }
+
 }

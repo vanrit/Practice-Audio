@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
@@ -63,12 +64,23 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     // There are no request codes
                     Intent data = result.getData();
+                    Audio au = (Audio)(data.getSerializableExtra("audio"));
+                    audios.add(au);
+                    a.notifyDataSetChanged();
+                    Log.i("GOT",au.name);
+                    Log.i("GOT2",au.path);
+                    try {
+                        playTune(au.path);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         resetPlayingTune();
+        audios = new AudiosList();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mediaPlayer = new MediaPlayer();
@@ -85,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             Log.i("info","no data");
-        audios = new AudiosList();
         audios.add(new Audio("A","unknown",10,"",false));
         audios.add(new Audio("B","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
 
@@ -272,7 +283,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void playTune(String path) throws IOException {
         Log.i("play","tune");
-        mediaPlayer = MediaPlayer.create((Activity)this, R.raw.t1);
+        Uri myUri = Uri.fromFile(new File(path));
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+        );
+        mediaPlayer.setDataSource(getApplicationContext(), myUri);
+        mediaPlayer.prepare();
+        mediaPlayer.start();
+  //      mediaPlayer = MediaPlayer.create((Activity)this, R.raw.t1);
 //        File fPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 //        File f = new File(fPath,"Test1.m4a");
 //        String[] li = fPath.list();
@@ -283,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 //        FileInputStream is = new FileInputStream(f);
 //        mediaPlayer.setDataSource(is.getFD());
 //        mediaPlayer.prepare();
-        mediaPlayer.start();
+ //       mediaPlayer.start();
     }
 
     public void pauseTune(int position) {

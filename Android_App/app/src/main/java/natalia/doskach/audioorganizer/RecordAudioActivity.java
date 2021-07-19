@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Chronometer;
@@ -25,10 +26,13 @@ public class RecordAudioActivity extends AppCompatActivity {
     ImageButton backBtn;
     Chronometer chronometer;
     String recordFile;
+    Audio audio;
+    String path;
 
     private EditText editText;
     private MediaRecorder recorder;
     boolean isRecording;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +46,24 @@ public class RecordAudioActivity extends AppCompatActivity {
         isRecording = false;
 
         backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(RecordAudioActivity.this, MainActivity.class);
-            startActivity(intent);
+            Intent data = new Intent();
+            String text = "Result to be returned....";
+//---set the data to pass back---
+            if(audio == null)
+                setResult(RESULT_CANCELED, data);
+            else{
+            data.putExtra("audio", audio);
+            setResult(RESULT_OK, data);}
+//---close the activity---
+            finish();
         });
 
         buttonRec.setOnClickListener(v -> {
             if (isRecording) {
-                recordStop();
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 chronometer.stop();
                 isRecording = false;
-                MainActivity.audios.add(new Audio(recordFile, "unknown",10,"",false));
+                audio = new Audio(recordFile, "unknown",10,path,true);
             } else {
                 if (askRuntimePermission()) {
                     try {
@@ -98,7 +109,8 @@ public class RecordAudioActivity extends AppCompatActivity {
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        recorder.setOutputFile(recordPath + "/" + recordFile);
+        path = recordPath + "/" + recordFile;
+        recorder.setOutputFile(path);
 
         try {
             recorder.prepare();
