@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -142,6 +143,31 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 return false;
+            }
+        });
+
+        Button fab1 = findViewById(R.id.fab1);
+
+        fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Показываем все программы для запуска
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("audio/*");
+                startActivityForResult(intent, 1);
+//
+//                String FilePath = intent.getData().getPath();
+//                String FileName = intent.getData().getLastPathSegment();
+
+//                Audio audio = new Audio(FileName, "unknown",10, FilePath,true);
+//
+//                Intent data = new Intent();
+//                if(audio == null)
+//                    setResult(RESULT_CANCELED, data);
+//                else{
+//                    data.putExtra("audio", audio);
+//                    setResult(RESULT_OK, data);}
+//                finish();
             }
         });
     }
