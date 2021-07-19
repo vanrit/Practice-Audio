@@ -40,6 +40,10 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         return mFilter;
     }
 
+    public Object getAudios() {
+        return filteredDataSet;
+    }
+
     private class ItemFilter extends Filter {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {

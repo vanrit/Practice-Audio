@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("onCreate","onCreate");
         resetPlayingTune();
         audios = new AudiosList();
         super.onCreate(savedInstanceState);
@@ -86,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
             Log.i("info","got data");
             String data = savedInstanceState.getString("audios");
             audios.changeData(new Gson().fromJson(data, new TypeToken<List<Audio>>(){}.getType()));
+        }
+        else if(getDataFromFile()){
+
         }
         else{
             Log.i("info","no data");
@@ -143,10 +147,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        Log.i("onStop","onStop");
+        super.onStop();
         String filename = "data";
-        String fileContents = new Gson().toJson(audios.getAudios());
+        String fileContents = new Gson().toJson(a.getAudios());
         try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
             fos.write(fileContents.getBytes());
         } catch (FileNotFoundException e) {
@@ -156,9 +161,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    protected boolean getDataFromFile(){
         String contents;
         FileInputStream fis = null;
         try {
@@ -168,28 +171,31 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         if(fis!=null){
-        InputStreamReader inputStreamReader =
-                new InputStreamReader(fis, StandardCharsets.UTF_8);
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-            String line = reader.readLine();
-            while (line != null) {
-                stringBuilder.append(line).append('\n');
-                line = reader.readLine();
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(fis, StandardCharsets.UTF_8);
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    stringBuilder.append(line).append('\n');
+                    line = reader.readLine();
+                }
+            } catch (IOException e) {
+                // Error occurred when opening raw file for reading.
+            } finally {
+                contents = stringBuilder.toString();
             }
-        } catch (IOException e) {
-            // Error occurred when opening raw file for reading.
-        } finally {
-            contents = stringBuilder.toString();
-        }
-        audios.changeData(new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType()));}
+            audios.changeData(new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType()));
+        return true;}
+        return false;
+
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState){
-        Log.i("info","save all data");
+        Log.i("info","onSaveInstanceState");
         super.onSaveInstanceState(outState);
-        outState.putString("audios", new Gson().toJson(audios.getAudios()));
+        outState.putString("audios", new Gson().toJson(a.getAudios()));
     }
 
     private void resetPlayingTune() {

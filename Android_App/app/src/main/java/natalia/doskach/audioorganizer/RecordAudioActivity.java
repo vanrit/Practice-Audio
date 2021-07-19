@@ -62,6 +62,7 @@ public class RecordAudioActivity extends AppCompatActivity {
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 chronometer.stop();
                 isRecording = false;
+                recordStop();
                 audio = new Audio(recordFile, "unknown",10,path,true);
             } else {
                 if (askRuntimePermission()) {
