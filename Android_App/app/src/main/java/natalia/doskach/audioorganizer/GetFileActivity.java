@@ -1,9 +1,9 @@
 package natalia.doskach.audioorganizer;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -30,7 +30,9 @@ public class GetFileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_get_file);
 
         backBtn = findViewById(R.id.back);
-        ImageButton buttonPick = findViewById(R.id.button123);
+        Button buttonPick = findViewById(R.id.button123);
+        textView1 = findViewById(R.id.text123);
+        textView2 = findViewById(R.id.text124);
 
         buttonPick.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -83,75 +85,10 @@ public class GetFileActivity extends AppCompatActivity {
 //                } catch (IOException e) {
 //                    e.printStackTrace();
 //                }
-//
+
 //                File sourceFile = new File(MainActivity.FilePath);
-//                File destDir = new File(getExternalFilesDir("").getAbsolutePath() + "/" + MainActivity.FileName);
-//                copyFile(MainActivity.FilePath, getExternalFilesDir("").getAbsolutePath());
-//
-//                // the file to be moved or copied
-//                File sourceLocation = new File (MainActivity.FilePath);
-//
-//                // make sure your target location folder exists!
-//                File targetLocation = new File (getExternalFilesDir("").getAbsolutePath());
-//
-//                // just to take note of the location sources
-//                Log.v(TAG, "sourceLocation: " + sourceLocation);
-//                Log.v(TAG, "targetLocation: " + targetLocation);
-//
-//                try {
-//
-//                    // 1 = move the file, 2 = copy the file
-//                    int actionChoice = 2;
-//
-//                    // moving the file to another directory
-//                    if(actionChoice==1){
-//
-//                        if(sourceLocation.renameTo(targetLocation)){
-//                            Log.v(TAG, "Move file successful.");
-//                        }else{
-//                            Log.v(TAG, "Move file failed.");
-//                        }
-//
-//                    }
-//
-//                    // we will copy the file
-//                    else{
-//
-//                        // make sure the target file exists
-//
-//                        if(sourceLocation.exists()){
-//
-//                            InputStream in = new FileInputStream(sourceLocation);
-//                            OutputStream out = new FileOutputStream(targetLocation);
-//
-//                            // Copy the bits from instream to outstream
-//                            byte[] buf = new byte[1024];
-//                            int len;
-//
-//                            while ((len = in.read(buf)) > 0) {
-//                                out.write(buf, 0, len);
-//                            }
-//
-//                            in.close();
-//                            out.close();
-//
-//                            Log.v(TAG, "Copy file successful.");
-//
-//                        }else{
-//                            Log.v(TAG, "Copy file failed. Source file missing.");
-//                        }
-//
-//                    }
-//
-//                } catch (NullPointerException e) {
-//                    e.printStackTrace();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
+//                File destDir = new File(getExternalFilesDir("").getAbsolutePath() + "/" + MainActivity.FileName + ".mp3");
                 copyFileOrDirectory(MainActivity.FilePath, getExternalFilesDir("").getAbsolutePath());
-//
-//
 //                try {
 //                    copyFileUsingStream(sourceFile, destDir);
 //                } catch (IOException e) {
@@ -186,24 +123,6 @@ public class GetFileActivity extends AppCompatActivity {
 ////---close the activity---
 //        finish();
     }
-
-//    private void copyFile(String src, String dst) {
-//        FileInputStream inputStream;
-//        FileOutputStream outputStream;
-//        try {
-//            inputStream = new FileInputStream(src); // create object
-//            outputStream = openFileOutput(dst, Context.MODE_PRIVATE);
-//            int bufferSize;
-//            byte[] buffer = new byte[512];
-//            while ((bufferSize = inputStream.read(buffer)) > 0) {
-//                outputStream.write(buffer, 0, bufferSize);
-//            }
-//            inputStream.close();
-//            outputStream.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public static void copyFileOrDirectory(String srcDir, String dstDir) {
 
