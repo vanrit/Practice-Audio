@@ -3,9 +3,7 @@ package natalia.doskach.audioorganizer;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,7 +14,7 @@ import java.util.Objects;
 
 public class GetFileActivity extends AppCompatActivity {
 
-    TextView textView1, textView2;
+//    TextView textView1, textView2;
 //    String FilePath;
 //    String FileName;
     ImageButton backBtn;
@@ -30,9 +28,9 @@ public class GetFileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_get_file);
 
         backBtn = findViewById(R.id.back);
-        Button buttonPick = findViewById(R.id.button123);
-        textView1 = findViewById(R.id.text123);
-        textView2 = findViewById(R.id.text124);
+        ImageButton buttonPick = findViewById(R.id.button123);
+//        textView1 = findViewById(R.id.text123);
+//        textView2 = findViewById(R.id.text124);
 
         buttonPick.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -62,9 +60,9 @@ public class GetFileActivity extends AppCompatActivity {
         if (requestCode == PICKFILE_RESULT_CODE) {
             if (resultCode == RESULT_OK) {
                 MainActivity.FilePath = data.getData().getPath();
-                textView1.setText(MainActivity.FilePath);
+//                textView1.setText(MainActivity.FilePath);
                 MainActivity.FileName = data.getData().getLastPathSegment();
-                textView2.setText(MainActivity.FileName);
+//                textView2.setText(MainActivity.FileName);
                 audio = new Audio(MainActivity.FileName, "unknown", 10, MainActivity.FilePath, true);
 //                File original = new File(MainActivity.FilePath);
 //                File copied = new File(getExternalFilesDir("").getAbsolutePath());
