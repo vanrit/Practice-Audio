@@ -12,7 +12,8 @@
         android:roundIcon="@drawable/colorwave"
         android:supportsRtl="true"
         android:theme="@style/Theme.AudioOrganizer">
-        <activity android:name=".RegisterActivity"></activity>
+        <activity android:name=".GetFileActivity"></activity>
+        <activity android:name=".RegisterActivity" />
         <activity android:name=".telegram.TelegramActivity" />
         <activity android:name=".RecordAudioActivity" />
         <activity android:name=".LoginActivity" />

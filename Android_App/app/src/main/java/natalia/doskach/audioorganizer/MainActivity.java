@@ -2,11 +2,11 @@ package natalia.doskach.audioorganizer;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -15,11 +15,9 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,13 +28,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
-import android.widget.TextView;
-
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,8 +40,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import natalia.doskach.audioorganizer.telegram.TelegramActivity;
 
@@ -57,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     AudioListAdapter a;
     RecyclerView list;
     ImageButton menuBtn;
+    static String FilePath, FileName;
     com.google.android.material.textfield.TextInputEditText input;
     boolean isFloatingMenuOpen = false;
     ActivityResultLauncher<Intent> audioActivityResultLauncher = registerForActivityResult(
@@ -65,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     // There are no request codes
                     Intent data = result.getData();
+                    assert data != null;
                     Audio au = (Audio)(data.getSerializableExtra("audio"));
                     a.addItem(au);
                 }
@@ -109,12 +106,10 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(a);
         list.setLayoutManager(new LinearLayoutManager(this));
         a.notifyDataSetChanged();
-        menuBtn = (ImageButton) findViewById(R.id.overflow_menu);
-        menuBtn.setOnClickListener(new ImageButton.OnClickListener() {
-            public void onClick(View v) {
-                Log.i("info","openMenu");
-                showPopupMenu(v);
-            }
+        menuBtn = findViewById(R.id.overflow_menu);
+        menuBtn.setOnClickListener(v -> {
+            Log.i("info","openMenu");
+            showPopupMenu(v);
         });
         input = findViewById(R.id.input);
         input.addTextChangedListener(new TextWatcher() {
@@ -132,29 +127,34 @@ public class MainActivity extends AppCompatActivity {
                 a.getFilter().filter(value);
             }
         });
-        input.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId== EditorInfo.IME_ACTION_DONE){
-                    Log.i("info","finished writing");
-                    getWindow().setSoftInputMode(
-                            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-                    );
+        input.setOnEditorActionListener((v, actionId, event) -> {
+            if(actionId== EditorInfo.IME_ACTION_DONE){
+                Log.i("info","finished writing");
+                getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+                );
 
-                }
-                return false;
             }
+            return false;
         });
 
         Button fab1 = findViewById(R.id.fab1);
 
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Показываем все программы для запуска
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("audio/*");
-                startActivityForResult(intent, 1);
+        fab1.setOnClickListener(v -> {
+
+            Intent intent = new Intent(MainActivity.this, GetFileActivity.class);
+            startActivity(intent);
+
+//                if (!FilePath.isEmpty()) {
+//                    audios.add(new Audio(FileName, "unknown", 10, FilePath, true));
+//                    FileName = "";
+//                    FilePath = "";
+//                }
+
+            // Показываем все программы для запуска
+//                Intent intent = new Intent(Intent.ACTION_PICK);
+//                intent.setType("audio/*");
+//                startActivityForResult(intent, 1);
 //
 //                String FilePath = intent.getData().getPath();
 //                String FileName = intent.getData().getLastPathSegment();
@@ -168,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
 //                    data.putExtra("audio", audio);
 //                    setResult(RESULT_OK, data);}
 //                finish();
-            }
         });
     }
 
@@ -180,8 +179,6 @@ public class MainActivity extends AppCompatActivity {
         String fileContents = new Gson().toJson(a.getAudios());
         try (FileOutputStream fos = getApplicationContext().openFileOutput(filename, Context.MODE_PRIVATE)) {
             fos.write(fileContents.getBytes());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -218,14 +215,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState){
+    public void onSaveInstanceState(@NonNull Bundle outState){
         Log.i("info","onSaveInstanceState");
         super.onSaveInstanceState(outState);
         outState.putString("audios", new Gson().toJson(a.getAudios()));
     }
 
     private void resetPlayingTune() {
-        SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(String.valueOf((R.string.playing_tune)), -1);
         editor.apply();
@@ -235,12 +232,7 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
         popupMenu.inflate(R.menu.overflow_menu);
 
-        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
-            @Override
-            public void onDismiss(PopupMenu menu) {
-                Log.i("info","close Menu");
-            }
-        });
+        popupMenu.setOnDismissListener(menu -> Log.i("info","close Menu"));
         popupMenu.show();
     }
 
@@ -256,10 +248,10 @@ public class MainActivity extends AppCompatActivity {
         audioActivityResultLauncher.launch(new Intent(this, RecordAudioActivity.class));
     }
 
-    public void importFromFile(View view) {
-        File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-        File f = new File(path,"Test1.mp4");
-    }
+//    public void importFromFile(View view) {
+//        File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+//        File f = new File(path,"Test1.mp4");
+//    }
 
     public void openTelegramImport(View view) {
         if(!mediaPlayer.isPlaying())
@@ -271,11 +263,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void toggleMenu(View view) {
-        FloatingActionButton fab0 = (FloatingActionButton) findViewById(R.id.fab0);
-        ExtendedFloatingActionButton fab1 = (ExtendedFloatingActionButton) findViewById(R.id.fab1);
-        ExtendedFloatingActionButton fab2 = (ExtendedFloatingActionButton) findViewById(R.id.fab2);
-        ExtendedFloatingActionButton fab3 = (ExtendedFloatingActionButton) findViewById(R.id.fab3);
-        ExtendedFloatingActionButton fab4 = (ExtendedFloatingActionButton) findViewById(R.id.fab4);
+        FloatingActionButton fab0 = findViewById(R.id.fab0);
+        ExtendedFloatingActionButton fab1 = findViewById(R.id.fab1);
+        ExtendedFloatingActionButton fab2 = findViewById(R.id.fab2);
+        ExtendedFloatingActionButton fab3 = findViewById(R.id.fab3);
+        ExtendedFloatingActionButton fab4 = findViewById(R.id.fab4);
         if(!isFloatingMenuOpen){
             fab0.setImageResource(R.drawable.ic_close);
             fab1.setVisibility(View.VISIBLE);
@@ -316,8 +308,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void pauseTune(int position) {
-        View v = list.getLayoutManager().findViewByPosition(position);
-        ImageButton playBtn = (ImageButton) v.findViewById(R.id.playBtn);
+        View v = Objects.requireNonNull(list.getLayoutManager()).findViewByPosition(position);
+        ImageButton playBtn = Objects.requireNonNull(v).findViewById(R.id.playBtn);
         playBtn.setImageResource(R.drawable.ic_play_circle_48);
         Log.i("pause","tune");
         if(mediaPlayer.isPlaying())
