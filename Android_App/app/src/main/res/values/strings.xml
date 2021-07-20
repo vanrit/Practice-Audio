@@ -2,7 +2,7 @@
     <string name="app_name">AudioOrganizer</string>
     <string name="authorization">АВТОРИЗАЦИЯ</string>
     <string name="wave_image_description">Music Wave Image</string>
-    <string name="login">ЛОГИН/E-MAIL</string>
+    <string name="login">ЛОГИН</string>
     <string name="hintlogin">anonymus123</string>
     <string name="search_hint">search</string>
     <string name="grey_panel">Grey panel</string>
