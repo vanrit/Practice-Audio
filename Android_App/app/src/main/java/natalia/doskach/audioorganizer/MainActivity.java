@@ -31,11 +31,27 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Authenticator;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -68,10 +84,14 @@ public class MainActivity extends AppCompatActivity {
                     Audio au = (Audio)(data.getSerializableExtra("audio"));
                     a.addItem(au);
                 }
+                if(result.getResultCode() == Activity.RESULT_FIRST_USER) {
+                    //synch with server
+                }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        checkLog();
         Log.i("onCreate","onCreate");
         resetPlayingTune();
         audios = new AudiosList();
@@ -170,6 +190,42 @@ public class MainActivity extends AppCompatActivity {
 //                finish();
             }
         });
+    }
+
+    private void checkLog() {
+// Instantiate the RequestQueue.
+        //TODO fix 401 error when logged in
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://84.201.143.25:8080/audios/all";
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url,null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if (response != null) {
+                     Log.i("log",response.toString());
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if(error instanceof ServerError)
+                    Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
+                if(error instanceof AuthFailureError)
+                {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                    lauchLogin();
+                }
+                if(error instanceof NetworkError)
+                    Log.e("net-error", String.valueOf(error));
+            }
+        });
+
+// Add the request to the RequestQueue.
+        queue.add(jsonObjectRequest);
+    }
+
+    void lauchLogin(){
+        audioActivityResultLauncher.launch(new Intent(this, LoginActivity.class));
+
     }
 
     @Override
@@ -294,6 +350,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void logout(MenuItem item) {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://84.201.143.25:8080/logout";
+
+// Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        checkLog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if(error instanceof ServerError)
+                    Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
+                if(error instanceof AuthFailureError)
+                {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                    Toast.makeText(getApplicationContext(), "Невозможно выйти из системы", Toast.LENGTH_SHORT).show();
+                }
+                if(error instanceof NetworkError)
+                    Toast.makeText(getApplicationContext(), "Проблемы с интернетом", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
     public void synchronize(MenuItem item) {

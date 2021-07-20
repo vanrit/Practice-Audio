@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".LoginActivity">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/wave_image_description"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:srcCompat="@drawable/colorwavesecond" />
+
     <TextView
         android:id="@+id/textView"
         android:text="@string/authorization"
@@ -92,12 +103,12 @@
         android:contentDescription="@string/grey_panel"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/edit1"
-        app:layout_constraintBottom_toBottomOf="@id/edit1"
+        app:layout_constraintTop_toTopOf="@id/editPassword"
+        app:layout_constraintBottom_toBottomOf="@id/editPassword"
         app:srcCompat="@drawable/button_panel" />
 
     <EditText
-        android:id="@+id/edit1"
+        android:id="@+id/editPassword"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:layout_marginTop="30dp"
@@ -126,12 +137,13 @@
         android:layout_marginEnd="150dp"
         android:background="@android:color/transparent"
         android:text="ЗАБЫЛИ ПАРОЛЬ?"
+        android:visibility="invisible"
         android:textColor="#3D3D3D"
         android:textSize="16sp"
         android:fontFamily="@font/alegreyasansrregular"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/edit1" />
+        app:layout_constraintTop_toTopOf="@id/editPassword" />
 
 
     <ImageButton
@@ -143,6 +155,7 @@
         android:layout_marginEnd="20dp"
         android:background="@drawable/button_sign_in"
         android:gravity="center"
+        android:onClick="signin"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/forgetPassword"
@@ -170,6 +183,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="80dp"
         android:layout_marginEnd="20dp"
+        android:onClick="register"
         android:background="@drawable/button_register"
         android:gravity="center"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -192,14 +206,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/signIn" />
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/wave_image_description"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:srcCompat="@drawable/colorwavesecond" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
