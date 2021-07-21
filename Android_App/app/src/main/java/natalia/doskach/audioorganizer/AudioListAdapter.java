@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.util.Log;
@@ -19,16 +20,40 @@ import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+
 
 public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.ViewHolder> implements Filterable {
 
+    private static final String KEY_ID = "id";
     private ArrayList<Audio> localDataSet;
     private ArrayList<Audio> filteredDataSet;
     private int playingTune = -1;
@@ -195,8 +220,12 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     private void showPopupMenu(ViewHolder viewHolder, View v,int position) {
         PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
         popupMenu.inflate(R.menu.audio_list_menu);
-        if(filteredDataSet.get(position).isDownloaded)
+        if(filteredDataSet.get(position).isDownloaded){
+            if(filteredDataSet.get(position).ID > 0) //файл есть на сервере
             popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("удалить файл");
+        else //файла нет на сервеое
+            popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("загрузить на сервер");
+        }
         else
             popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("скачать файл");
         popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
@@ -220,12 +249,22 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                                 if(!filteredDataSet.get(position).isDownloaded)
                                     downloadSong(viewHolder,v,position);
                                 else{
-                                    removeFile(position, viewHolder);
+
+                                    if(filteredDataSet.get(position).ID > 0) //файл есть на сервере
+                                        removeFile(position, viewHolder);
+                                    else //файла нет на сервеое
+                                    {
+                                        try {
+                                            uploadFile(position, viewHolder);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
                                 return true;
                             case R.id.deleteBtn:
                                 Log.i("info","delete");
-                                deleteItem(position);
+                                deleteItem(position, viewHolder);
                                 return true;
                             default:
                                 return false;
@@ -236,6 +275,10 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         popupMenu.show();
     }
 
+    private void uploadFile(int position, ViewHolder viewHolder) throws IOException {
+
+    }
+
     private void removeFile(int position, ViewHolder viewHolder) {
         //TODO: remove File and delete item if not on server
         Log.i("info","remove song");
@@ -244,10 +287,53 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_arrow_circle_down_48);
     }
 
-    private void deleteItem(int position) {
+    private void deleteItem(int position, ViewHolder viewHolder) { //delete from the list, delete file, delete file from server
+        if(filteredDataSet.get(position).ID > 0){ //file is on server
+            RequestQueue queue = Volley.newRequestQueue(viewHolder.context);
+            String url ="http://84.201.143.25:8080/audios/delete";
+            StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            deleteFromFiles(position);
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    if(error instanceof ServerError)
+                        Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
+                    if(error instanceof AuthFailureError)
+                    {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                    }
+                    if(error instanceof NetworkError)
+                        Toast.makeText(dialog.getContext(), "Невозможно удалить без интернета", Toast.LENGTH_SHORT).show();
+                }
+            }){
+                @Override
+                protected Map<String,String> getParams(){
+                    Map<String,String> params = new HashMap<String, String>();
+                    params.put(KEY_ID, String.valueOf(filteredDataSet.get(position).ID));
+                    return params;
+                }
+
+
+            };
+
+// Add the request to the RequestQueue.
+            queue.add(stringRequest);
+        }
+        deleteFromFiles(position);
+        }
+
+    private void deleteFromFiles(int position) {
+        File f = new File(filteredDataSet.get(position).path);
+        if(f.exists())
+            f.delete();
         filteredDataSet.remove(position);
         notifyItemRemoved(position);
+        notifyDataSetChanged();
     }
+
     public void addItem(Audio a){
         Log.i("audio","added");
         filteredDataSet.add(a);
@@ -285,6 +371,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 
     private void downloadSong(ViewHolder viewHolder, View v, int position) {
         Log.i("info","download song");
+
         filteredDataSet.get(position).isDownloaded = true;
         notifyItemChanged(position);
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);

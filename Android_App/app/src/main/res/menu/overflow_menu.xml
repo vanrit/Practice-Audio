@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="синхронизировать с сервером" android:id="@+id/sinchItem" android:onClick="synchronize"/>
+    <item android:title="синхронизировать с сервером"
+        android:visible="false"
+        android:id="@+id/sinchItem" android:onClick="synchronize"/>
 
     <item android:title="выйти из профиля" android:id="@+id/logoutItem" android:onClick="logout"/>
 </menu>

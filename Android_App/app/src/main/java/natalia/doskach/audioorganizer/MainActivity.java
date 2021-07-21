@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if(result.getResultCode() == Activity.RESULT_FIRST_USER) {
                     //synch with server
+                    checkLog();
                 }
             });
 
@@ -192,8 +193,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void checkLog() {
-// Instantiate the RequestQueue.
+    public void checkLog() {
         //TODO fix 401 error when logged in
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://84.201.143.25:8080/audios/all";
@@ -218,8 +218,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("net-error", String.valueOf(error));
             }
         });
-
-// Add the request to the RequestQueue.
         queue.add(jsonObjectRequest);
     }
 

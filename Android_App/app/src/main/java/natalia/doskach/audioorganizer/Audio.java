@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public class Audio implements Serializable {
     public String name;
-    public int ID;
+    public int ID = -1;
     public String author;
     public int len;
     public boolean isDownloaded;
@@ -20,4 +20,11 @@ public class Audio implements Serializable {
         this.isDownloaded = isDownloaded;
     }
 
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
 }
