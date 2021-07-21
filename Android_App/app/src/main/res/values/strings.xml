@@ -29,4 +29,6 @@
     <string name="choose_audio">ВЫБРАТЬ АУДИО</string>
     <string name="choose_file">ВЫБРАТЬ ФАЙЛ</string>
     <string name="whatsapp">ЗАЙТИ В WHATSAPP</string>
+    <string name="choose_file_from_whatsapp">ВЫБРАТЬ ФАЙЛ</string>
+    <string name="if_is_empty">Если будет пусто, то отобразите скрытые файлы</string>
 </resources>
