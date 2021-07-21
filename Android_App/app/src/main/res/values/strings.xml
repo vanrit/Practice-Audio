@@ -28,4 +28,5 @@
     <string name="audio_name">НАЗВАНИЕ АУДИО</string>
     <string name="choose_audio">ВЫБРАТЬ АУДИО</string>
     <string name="choose_file">ВЫБРАТЬ ФАЙЛ</string>
+    <string name="whatsapp">ЗАЙТИ В WHATSAPP</string>
 </resources>
