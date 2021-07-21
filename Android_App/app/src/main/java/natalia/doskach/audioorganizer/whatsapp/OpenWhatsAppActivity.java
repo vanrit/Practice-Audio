@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -56,7 +55,8 @@ public class OpenWhatsAppActivity extends AppCompatActivity {
         Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath()
                 +  File.separator + "WhatsApp/Media/WhatsApp Voice Notes" + File.separator);
         intent.setDataAndType(uri, "resource/folder");
-        startActivity(Intent.createChooser(intent, "Open folder"));
+        startActivityForResult(Intent.createChooser(intent, "Open folder"),1);
+//        startActivity(Intent.createChooser(intent, "Open folder"));
     }
 
     @Override
