@@ -25,7 +25,6 @@ public class AudioUploadingApplication {
 	@Bean
 	CommandLineRunner init(StorageService storageService, UsersRepository usersRepository, AudioRepository audioRepository) {
 		return (args) -> {
-			storageService.deleteAll();
 			storageService.init();
 
 			if (usersRepository.findByUsername("admin") == null) {
@@ -37,8 +36,6 @@ public class AudioUploadingApplication {
 				admin.setPassword(passwordEncoder.encode("q2GkFd23"));
 				usersRepository.save(admin);
 			}
-
-			audioRepository.deleteAll();
 		};
 	}
 }

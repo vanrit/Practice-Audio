@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.stream.Stream;
 
 import com.example.uploadingfiles.exceptions.StorageException;
 import com.example.uploadingfiles.exceptions.StorageFileNotFoundException;
@@ -18,7 +17,6 @@ import com.example.uploadingfiles.user.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -34,10 +32,19 @@ public class AudioStorageService implements StorageService {
 		this.rootLocation = Paths.get(properties.getLocation());
 	}
 
+	/**
+	 * Получение корневой папки хранения.
+	 * @return
+	 */
 	public Path getRootLocation() {
 		return rootLocation;
 	}
 
+	/**
+	 * Сохранение файла.
+	 * @param file
+	 * @param scope
+	 */
 	@Override
 	public void store(MultipartFile file, String scope) {
 		try {
@@ -78,6 +85,12 @@ public class AudioStorageService implements StorageService {
 	}
 
 
+	/**
+	 * Загрузка пути файла сохранённой аудиозаписи.
+	 * @param recordName
+	 * @param scope
+	 * @return
+	 */
 	@Override
 	public Path load(String recordName, String scope) {
 
@@ -93,6 +106,12 @@ public class AudioStorageService implements StorageService {
 		return loadDirectory.resolve(recordName);
 	}
 
+	/**
+	 * Загрузкза файла.
+	 * @param filename
+	 * @param scope
+	 * @return
+	 */
 	@Override
 	public Resource loadAsResource(String filename, String scope) {
 		try {
@@ -112,11 +131,17 @@ public class AudioStorageService implements StorageService {
 		}
 	}
 
+	/**
+	 * Удаление всех аудиофайлов.
+	 */
 	@Override
 	public void deleteAll() {
 		FileSystemUtils.deleteRecursively(rootLocation.toFile());
 	}
 
+	/**
+	 * Создание корневой папки для хранения.
+	 */
 	@Override
 	public void init() {
 		try {

@@ -28,6 +28,11 @@ public class AuthController {
     @javax.annotation.Resource(name = "authenticationManager")
     private AuthenticationManager authenticationManager;
 
+    /**
+     * Регистраия пользователя.
+     * @param user
+     * @return
+     */
     @PostMapping("/signup")
     public RegistrationResponse processRegister(@RequestBody User user) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -52,6 +57,12 @@ public class AuthController {
         return new RegistrationResponse(user.getUsername(), "User registered!", user.getUserId());
     }
 
+    /**
+     * Авторизация пользователя.
+     * @param username
+     * @param password
+     * @param request
+     */
     @PostMapping("/login")
     public void login(@RequestParam("username") final String username,
                       @RequestParam("password") final String password,

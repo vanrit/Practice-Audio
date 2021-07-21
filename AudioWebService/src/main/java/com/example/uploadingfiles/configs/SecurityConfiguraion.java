@@ -39,6 +39,11 @@ public class SecurityConfiguraion extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    /**
+     * Конфигурация настроек доступа к сервису.
+     * @param http
+     * @throws Exception
+     */
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http

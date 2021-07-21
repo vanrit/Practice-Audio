@@ -1,7 +1,6 @@
 package com.example.uploadingfiles.controllers;
 
 import com.example.uploadingfiles.repository.AudioRepository;
-import com.example.uploadingfiles.responses.RegistrationResponse;
 import com.example.uploadingfiles.responses.UploadResponse;
 import com.example.uploadingfiles.repository.UsersRepository;
 import com.example.uploadingfiles.service.AudioStorageService;
@@ -60,78 +59,91 @@ public class AudioUploadController {
 		this.storageService = storageService;
 	}
 
+	/**
+	 * Возвращает методы для работы с веб-сервисом.
+	 * @return
+	 */
 	@GetMapping("/")
 	@ResponseBody
 	public String getMethods() {
 
-		String answer = "Доступные методы:\n" +
-				"1) 84.201.143.25:8080/all\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: JSON, содержащий список всех аудиофайлов, с описанием их полей(record_id, user_id, path, record_name, duration, source, source_id, source_author)\n\n" +
-				"2) 84.201.143.25:8080/audios/*filename*\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: аудиофайл\n\n" +
-				"3) 84.201.143.25:8080/audios/upload\n" +
-				"* Тип запроса: POST\n" +
-				"* Тело запроса:\n" +
-				"	1. Поле file, содержащее аудиофайл\n" +
-				"	2. Поле source, содержащее информацию об источнике аудиозаписи (Local, Telegram, Whatsapp)\n" +
-				"	3. Поле scope, определяющая уровень доступа к аудиозаписи (private или public)\n" +
-				"	4. (Опционально) Поле source_author, содержащее имя автора аудиозаписи\n" +
-				"	5. (Опционально) Поле source_id, содержащее id автора, если он является зарегистрированным пользователем\n" +
-				"* Ответ: JSON, содержащий информацию о результате загрузки (fileName, songId, fileDownloadUri, size, status (1 - загрузка выполнена успешно, 0 - ошибка во время сохранения файла, -1 - некорректный формат файла/файл с таким именем уже загружен))\n" +
-				"* Поддерживаемые форматы: ogg, mp3, flac, mp4, m4a, m4p, wma, wav, ra, rm, m4b, aif\n\n" +
-				"4) 84.201.143.25:8080/signup\n" +
-				"* Тип запроса: POST\n" +
-				"* Тело запроса: JSON, содержащий поля:\n" +
-				"	1. firstName - имя пользователя\n" +
-				"	2. lastName - фамилия пользователя\n" +
-				"	3. username - логин пользователя\n" +
-				"	4. password - пароль пользователя\n" +
-				"* Ответ: JSON, содержащий поля:\n" +
-				"	1. username - имя пользователя\n" +
-				"	2. id - id пользователя (0 - в случае неудачной регистрации)\n" +
-				"	3. status - статус регистрации:\n" +
-				"		- User registered! - пользователь успешно зарегистрирован!\n" +
-				"		- User already exist! - пользователь с указанным логином уже существует\n" +
-				"		- Registration error! - ошибка во время регистрации\n\n" +
-				"5) 84.201.143.25:8080/login\n" +
-				"* Тип запроса: POST\n" +
-				"* Тело запроса:\n" +
-				"	1. Поле username - логин пользователя\n" +
-				"	2. Поле password - пароль пользователя\n" +
-				"* Ответ: Код 200 в случае успешной регистрации, 401 - в случае ошибочных данных\n\n" +
-				"6) 84.201.143.25:8080/audios/delete\n" +
-				"* Тип запроса: DELETE\n" +
-				"* Тело запроса: Поле id, содержащее id аудиофайла для удаления\n" +
-				"* Ответ: Код 200, в случае успешного удаления, 404 - файл с указанным id отсутствует на сервере\n\n" +
-				"7) 84.201.143.25:8080/logout\n" +
-				"* Тип запроса: Любой\n" +
-				"* Ответ: Код 200, в случае успешного выхода из аккаунта\n\n" +
-				"8) 84.201.143.25:8080/audios/public/all\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: JSON, содержащий информацию о всех публичный аудиозаписях (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)\n\n" +
-				"9) 84.201.143.25:8080/audios/public/*filename*\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: аудиофайл с публичным доступом\n\n" +
-				"Методы для администратора:\n" +
-				"1) 84.201.143.25:8080/admin/users\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: JSON, содержащий информацию о всех пользователях (firstName, lastName, username, password)\n\n" +
-				"2) 84.201.143.25:8080/admin/audios\n" +
-				"* Тип запроса: GET\n" +
-				"* Ответ: JSON, содержащий информацию о всех аудиозаписях пользователей (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)\n\n" +
-				"3) 84.201.143.25:8080/admin/delete_audio\n" +
-				"* Тип запроса: DELETE\n" +
-				"* Тело запроса: поле recordId, содержащее id записи, которую надо удалить\n\n" +
-				"4) 84.201.143.25:8080/admin/delete_user\n" +
-				"* Тип запроса: DELETE\n" +
-				"* Тело запроса: поле userId, содержащее id пользователя, которого надо удалить\n\n";
+		String answer = "Доступные методы:<br>" +
+				"1) 84.201.143.25:8081/all<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: JSON, содержащий список всех аудиофайлов, с описанием их полей(record_id, user_id, path, record_name, duration, source, source_id, source_author)<br><br>" +
+				"2) 84.201.143.25:8081/audios/*filename*<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: аудиофайл<br><br>" +
+				"3) 84.201.143.25:8081/audios/upload<br>" +
+				"* Тип запроса: POST<br>" +
+				"* Тело запроса:<br>" +
+				"	1. Поле file, содержащее аудиофайл<br>" +
+				"	2. Поле source, содержащее информацию об источнике аудиозаписи (Local, Telegram, Whatsapp)<br>" +
+				"	3. (Опционально) Поле scope, определяющая уровень доступа к аудиозаписи (private[по умолчанию] или public)<br>" +
+				"	4. (Опционально) Поле source_author, содержащее имя автора аудиозаписи<br>" +
+				"	5. (Опционально) Поле source_id, содержащее id автора, если он является зарегистрированным пользователем<br>" +
+				"* Ответ: JSON, содержащий информацию о результате загрузки (fileName, songId, fileDownloadUri, size, status (1 - загрузка выполнена успешно, 0 - ошибка во время сохранения файла, -1 - некорректный формат файла/файл с таким именем уже загружен))<br>" +
+				"* Поддерживаемые форматы: ogg, mp3, flac, mp4, m4a, m4p, wma, wav, ra, rm, m4b, ai<br><br>" +
+				"4) 84.201.143.25:8081/signup<br>" +
+				"* Тип запроса: POST<br>" +
+				"* Тело запроса: JSON, содержащий поля:<br>" +
+				"	1. firstName - имя пользователя<br>" +
+				"	2. lastName - фамилия пользователя<br>" +
+				"	3. username - логин пользователя<br>" +
+				"	4. password - пароль пользователя<br>" +
+				"* Ответ: JSON, содержащий поля:<br>" +
+				"	1. username - имя пользователя<br>" +
+				"	2. id - id пользователя (0 - в случае неудачной регистрации)<br>" +
+				"	3. status - статус регистрации:<br>" +
+				"		- User registered! - пользователь успешно зарегистрирован!<br>" +
+				"		- User already exist! - пользователь с указанным логином уже существует<br>" +
+				"		- Registration error! - ошибка во время регистрации<br><br>" +
+				"5) 84.201.143.25:8081/login<br>" +
+				"* Тип запроса: POST<br>" +
+				"* Тело запроса:<br>" +
+				"	1. Поле username - логин пользователя<br>" +
+				"	2. Поле password - пароль пользователя<br>" +
+				"* Ответ: Код 200 в случае успешной регистрации, 401 - в случае ошибочных данных<br><br>" +
+				"6) 84.201.143.25:8081/audios/delete<br>" +
+				"* Тип запроса: DELETE<br>" +
+				"* Тело запроса: Поле id, содержащее id аудиофайла для удаления<br>" +
+				"* Ответ: Код 200, в случае успешного удаления, 404 - файл с указанным id отсутствует на сервере<br><br>" +
+				"7) 84.201.143.25:8081/logout<br>" +
+				"* Тип запроса: Любой<br>" +
+				"* Ответ: Код 200, в случае успешного выхода из аккаунта<br><br>" +
+				"8) 84.201.143.25:8081/audios/public/all<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: JSON, содержащий информацию о всех публичный аудиозаписях (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
+				"9) 84.201.143.25:8081/audios/public/*filename*<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: аудиофайл с публичным доступом<br><br>" +
+				"10) 84.201.143.25:8081/audios/recognition<br>" +
+				"* Тип запроса: POST<br>" +
+				"* Тело запроса: поле file, содержащее аудиозапись<br>" +
+				"* Ответ: JSON, содержащий информацию о распонанной аудиозаписи (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
+				"Методы для администратора:<br>" +
+				"1) 84.201.143.25:8081/admin/users<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: JSON, содержащий информацию о всех пользователях (firstName, lastName, username, password)<br><br>" +
+				"2) 84.201.143.25:8081/admin/audios<br>" +
+				"* Тип запроса: GET<br>" +
+				"* Ответ: JSON, содержащий информацию о всех аудиозаписях пользователей (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
+				"3) 84.201.143.25:8081/admin/delete_audio<br>" +
+				"* Тип запроса: DELETE<br>" +
+				"* Тело запроса: поле recordId, содержащее id записи, которую надо удалить<br><br>" +
+				"4) 84.201.143.25:8081/admin/delete_user<br>" +
+				"* Тип запроса: DELETE<br>" +
+				"* Тело запроса: поле userId, содержащее id пользователя, которого надо удалить<br><br>";
 
 
 		return answer;
 	}
 
+	/**
+	 * Возвращает все загруженные пользователем аудиозаписи.
+	 * @param userDetails
+	 * @return
+	 */
 	@GetMapping("/audios/all")
 	@ResponseBody
 	public List<AudioFile> getUserRecords(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -142,12 +154,21 @@ public class AudioUploadController {
 
 	}
 
+	/**
+	 * Возвращает все публичные аудиозаписи.
+	 * @return
+	 */
 	@GetMapping("/audios/public/all")
 	@ResponseBody
 	public List<AudioFile> getPublicRecords() {
 		return audioRepository.findByScope("public");
 	}
 
+	/**
+	 * Возвращает файл с аудиозаписью *filename*
+	 * @param filename
+	 * @return
+	 */
 	@GetMapping("/audios/{filename:.+}")
 	@ResponseBody
 	public ResponseEntity<Resource> serveRecord(@PathVariable String filename) {
@@ -171,6 +192,11 @@ public class AudioUploadController {
 				"attachment; filename=\"" + file.getFilename() + "\"").body(file);
 	}
 
+	/**
+	 * Возвращает публичный файл с именем *filename*
+	 * @param filename
+	 * @return
+	 */
 	@GetMapping("/audios/public/{filename:.+}")
 	@ResponseBody
 	public ResponseEntity<Resource> servePublicRecord(@PathVariable String filename) {
@@ -192,6 +218,16 @@ public class AudioUploadController {
 	}
 
 
+	/**
+	 * Загрузка аудиозаписи на сервер.
+	 * @param file - файл с аудиозаписью
+	 * @param source - источник аудиозаписи (Local, Telegram или Whatsapp)
+	 * @param scope - доступ к аудиозаписи (public или private)
+	 * @param sourceId - id пользователя-источника аудиозаписи
+	 * @param sourceAuthor - имя автора аудизаписи
+	 * @param userDetails
+	 * @return
+	 */
 	@PostMapping("/audios/upload")
 	public UploadResponse handleFileUpload(@RequestParam("file") MultipartFile file,
 										   @RequestParam("source") String source,
@@ -220,7 +256,7 @@ public class AudioUploadController {
 				audioRepository.save(audioFile);
 
 				return new UploadResponse(file.getOriginalFilename(),
-						"84.201.143.25:8080/audios/" + (scope.equals("public") ? "public/" : "") + file.getOriginalFilename(),
+						"84.201.143.25:8081/audios/" + (scope.equals("public") ? "public/" : "") + file.getOriginalFilename(),
 							file.getSize(), status, audioFile.getRecordId());
 
 			} catch (Exception exception) {
@@ -242,6 +278,22 @@ public class AudioUploadController {
 					file.getSize(), status, (long) 0);
 	}
 
+	/**
+	 * Распознавание переданной аудиозаписи.
+	 * @param file
+	 * @return Распознанная аудиозапись.
+	 */
+	@PostMapping("/audios/recognition")
+	public AudioFile audioRecognition(@RequestParam("file") MultipartFile file) {
+		return recogniseFromFile(file);
+	}
+
+	/**
+	 * Удаление аудиозаписи по id.
+	 * @param id
+	 * @param userDetails
+	 * @return
+	 */
 	@DeleteMapping("/audios/delete")
 	public ResponseEntity<?> deleteAudio(@RequestParam("id") Long id,
 										 @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -266,17 +318,35 @@ public class AudioUploadController {
 		}
 	}
 
+	/**
+	 * Обработка StorageFileNotFoundException
+	 * @param exc
+	 * @return
+	 */
 	@ExceptionHandler(StorageFileNotFoundException.class)
 	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
 		return ResponseEntity.notFound().build();
 	}
 
+	/**
+	 * Проверка формата файла по его названию.
+	 * @param fileName
+	 * @return
+	 */
 	public boolean checkFormat(String fileName) {
 		String fileFormat = fileName.substring(fileName.indexOf('.') + 1);
 
 		return formats.stream().anyMatch(a -> a.equals(fileFormat));
 	}
 
+	/**
+	 * Получение хранящегося на сервере файла по его имени, имени пользователя
+	 * и уровне доступа.
+	 * @param fileName
+	 * @param username
+	 * @param scope
+	 * @return
+	 */
 	public File getStoredFile(String fileName, String username, String scope) {
 		Path rootLocation = ((AudioStorageService)storageService).getRootLocation();
 
@@ -295,6 +365,16 @@ public class AudioUploadController {
 		return storedFile.toFile();
 	}
 
+	/**
+	 * Получение значения длительности аудиозаписи из файла.
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 * @throws TagException
+	 * @throws ReadOnlyFileException
+	 * @throws CannotReadException
+	 * @throws InvalidAudioFrameException
+	 */
 	public Time getDuration(File file) throws IOException, TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException {
 
 		org.jaudiotagger.audio.AudioFile audioFile = AudioFileIO.read(file);
@@ -309,6 +389,12 @@ public class AudioUploadController {
 		return new Time(hours, minutes, seconds);
 	}
 
+	/**
+	 * Удаление файла по его имени, имени пользователя и уровню доступа.
+	 * @param fileName
+	 * @param username
+	 * @param scope
+	 */
 	public void deleteAudioFile(String fileName, String username, String scope) {
 		Path rootLocation = ((AudioStorageService)storageService).getRootLocation();
 
@@ -324,6 +410,27 @@ public class AudioUploadController {
 		if (storedFile.exists()) {
 			storedFile.delete();
 		}
+	}
+
+	/**
+	 * Распознавание аудиозаписи по переданному файлу (заглушка).
+	 * @param file
+	 * @return
+	 */
+	public AudioFile recogniseFromFile(MultipartFile file) {
+
+		AudioFile audioFile = new AudioFile();
+		audioFile.setRecordId((long)1);
+		audioFile.setUserId((long)1);
+		audioFile.setSourceAuthor("Queen");
+		audioFile.setSourceId((long)1);
+		audioFile.setSource("Local");
+		audioFile.setPath("user/Bohemian_Rhapsody.mp3");
+		audioFile.setScope("public");
+		audioFile.setRecordName("Bohemian_Rhapsody.mp3");
+		audioFile.setDuration(new Time(0, 5, 54));
+
+		return audioFile;
 	}
 
 }

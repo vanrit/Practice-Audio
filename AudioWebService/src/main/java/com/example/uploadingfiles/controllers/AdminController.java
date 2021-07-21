@@ -28,18 +28,31 @@ public class AdminController {
     @Autowired
     private StorageService storageService;
 
+    /**
+     * Получение данных обо всех пользователях.
+     * @return
+     */
     @GetMapping("/admin/users")
     @ResponseBody
     public List<User> getUsers() {
         return usersRepository.findAll();
     }
 
+    /**
+     * Получение данных обо всех аудиозаписях.
+     * @return
+     */
     @GetMapping("/admin/audios")
     @ResponseBody
     public List<AudioFile> getAudios() {
         return audioRepository.findAll();
     }
 
+    /**
+     * Удаление пользователя по id.
+     * @param userId
+     * @return
+     */
     @DeleteMapping("/admin/delete_user")
     public ResponseEntity<?> deleteUser(@RequestParam Long userId) {
 
@@ -62,6 +75,11 @@ public class AdminController {
         }
     }
 
+    /**
+     * Удаление аудиозаписи по id.
+     * @param recordId
+     * @return
+     */
     @DeleteMapping("/admin/delete_audio")
     public ResponseEntity<?> deleteAudio(@RequestParam Long recordId) {
 
@@ -83,6 +101,10 @@ public class AdminController {
         }
     }
 
+    /**
+     * Удаление директории пользователя.
+     * @param username
+     */
     public void deleteUserDirectory(String username) {
         if (storageService instanceof AudioStorageService) {
             Path rootLocation = ((AudioStorageService) storageService).getRootLocation();
@@ -101,6 +123,12 @@ public class AdminController {
         }
     }
 
+    /**
+     * Удаление фалйла пользователя.
+     * @param fileName
+     * @param username
+     * @param scope
+     */
     public void deleteAudioFile(String fileName, String username, String scope) {
         Path rootLocation = ((AudioStorageService)storageService).getRootLocation();
 
