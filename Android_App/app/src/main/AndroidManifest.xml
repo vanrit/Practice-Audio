@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +14,8 @@
         android:roundIcon="@drawable/colorwave"
         android:supportsRtl="true"
         android:theme="@style/Theme.AudioOrganizer">
-        <activity android:name=".GetFileActivity"></activity>
+        <activity android:name=".whatsapp.OpenWhatsAppActivity"></activity>
+        <activity android:name=".GetFileActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".telegram.TelegramActivity" />
         <activity android:name=".RecordAudioActivity" />

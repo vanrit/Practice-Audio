@@ -72,6 +72,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import natalia.doskach.audioorganizer.telegram.TelegramActivity;
+import natalia.doskach.audioorganizer.whatsapp.OpenWhatsAppActivity;
 
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     AudioListAdapter a;
     RecyclerView list;
     ImageButton menuBtn;
-    static String FilePath, FileName;
+    public static String FilePath, FileName;
     com.google.android.material.textfield.TextInputEditText input;
     boolean isFloatingMenuOpen = false;
     ActivityResultLauncher<Intent> audioActivityResultLauncher = registerForActivityResult(
@@ -205,6 +206,13 @@ public class MainActivity extends AppCompatActivity {
 //                    data.putExtra("audio", audio);
 //                    setResult(RESULT_OK, data);}
 //                finish();
+        });
+
+        Button fab3 = findViewById(R.id.fab3);
+
+        fab3.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, OpenWhatsAppActivity.class);
+            startActivity(intent);
         });
     }
 
