@@ -67,7 +67,7 @@ public class AudioTGAdapter extends RecyclerView.Adapter<AudioTGAdapter.ViewHold
             Log.i("audio","clicked");
             view.setBackgroundColor(view.getContext().getResources().getColor(R.color.light_gray));
             Intent data = new Intent();
-            Audio audio = new Audio("tg","unknown",10,"/storage/emulated/0/Download/Test3.m4a",true);
+            Audio audio = new Audio("TG "+date.getText().toString(),sender.getText().toString(),4,"/storage/emulated/0/Download/Test3.m4a",true);
 //---set the data to pass back---
             if(audio == null)
                 ((Activity)view.getContext()).setResult(Activity.RESULT_CANCELED, data);

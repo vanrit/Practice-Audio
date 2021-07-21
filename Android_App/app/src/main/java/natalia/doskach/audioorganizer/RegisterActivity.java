@@ -25,15 +25,21 @@ import com.google.gson.JsonObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegisterActivity extends AppCompatActivity {
     EditText login;
     EditText password;
     EditText passwordRep;
+    RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        queue = MySingleton.getInstance(this.getApplicationContext()).
+                getRequestQueue();
         login = findViewById(R.id.editLogin);
         password = findViewById(R.id.password);
         passwordRep = findViewById(R.id.repeatPassword);
@@ -50,9 +56,7 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Пароли не совпадают!", Toast.LENGTH_SHORT).show();
         }
         else{
-// Instantiate the RequestQueue.
-            RequestQueue queue = Volley.newRequestQueue(this);
-            String url ="http://84.201.143.25:8080/signup";
+            String url ="http://84.201.143.25:8081/signup";
             JSONObject j = new JSONObject();
             j.put("firstName","firstName");
             j.put("lastName","lastName");
@@ -68,9 +72,41 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), response.getString("status"), Toast.LENGTH_SHORT).show();
                             else{
                                 Log.i("info","registered");
-                                Intent data = new Intent();
-                                setResult(Activity.RESULT_OK);
-                                finish();
+                                String url ="http://84.201.143.25:8081/login";
+
+                                // Request a string response from the provided URL.
+                                StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                                        new Response.Listener<String>() {
+                                            @Override
+                                            public void onResponse(String response) {
+                                                Toast.makeText(getApplicationContext(), "Вход выполнен", Toast.LENGTH_SHORT).show();
+                                                setResult(Activity.RESULT_OK);
+                                                finish();
+                                            }
+                                        }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        if(error instanceof ServerError)
+                                            Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
+                                        if(error instanceof AuthFailureError)
+                                        {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                                            Toast.makeText(getApplicationContext(), "Пароль или логин неверный", Toast.LENGTH_SHORT).show();
+                                        }
+                                        if(error instanceof NetworkError)
+                                            Log.e("net-error", String.valueOf(error));
+                                    }
+                                }){
+                                    @Override
+                                    protected Map<String,String> getParams(){
+                                        Map<String,String> params = new HashMap<String, String>();
+                                        params.put("username",loginT);
+                                        params.put("password",passwordT);
+                                        return params;
+                                    }
+
+
+                                };
+                                queue.add(stringRequest);
                             }
                         } catch (JSONException e) {
                             Log.i("ERROR","");

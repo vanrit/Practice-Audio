@@ -36,12 +36,15 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Authenticator;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -63,7 +66,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import natalia.doskach.audioorganizer.telegram.TelegramActivity;
@@ -72,6 +77,7 @@ import natalia.doskach.audioorganizer.telegram.TelegramActivity;
 public class MainActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
     static AudiosList audios;
+    RequestQueue queue;
     AudioListAdapter a;
     RecyclerView list;
     ImageButton menuBtn;
@@ -85,19 +91,22 @@ public class MainActivity extends AppCompatActivity {
                     // There are no request codes
                     Intent data = result.getData();
                     assert data != null;
-                    Audio au = (Audio)(data.getSerializableExtra("audio"));
+                    Audio au = (Audio) (data.getSerializableExtra("audio"));
+                    au.len = au.getDuration(getApplicationContext());
                     a.addItem(au);
                 }
-                if(result.getResultCode() == Activity.RESULT_FIRST_USER) {
+                if (result.getResultCode() == Activity.RESULT_FIRST_USER) {
                     //synch with server
-                    checkLog();
                 }
             });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        queue = MySingleton.getInstance(this.getApplicationContext()).
+                getRequestQueue();
         checkLog();
-        Log.i("onCreate","onCreate");
+
+        Log.i("onCreate", "onCreate");
         resetPlayingTune();
         audios = new AudiosList();
         super.onCreate(savedInstanceState);
@@ -109,21 +118,20 @@ public class MainActivity extends AppCompatActivity {
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .build()
         );
-        if(savedInstanceState != null){
-            Log.i("info","got data");
+        if (savedInstanceState != null) {
+            Log.i("info", "got data");
             String data = savedInstanceState.getString("audios");
-            audios.changeData(new Gson().fromJson(data, new TypeToken<List<Audio>>(){}.getType()));
-        }
-        else if(getDataFromFile()){
+            audios.changeData(new Gson().fromJson(data, new TypeToken<List<Audio>>() {
+            }.getType()));
+        } else if (getDataFromFile()) {
 
-        }
-        else{
-            Log.i("info","no data");
-        audios.add(new Audio("test1","unknown",10,"/storage/emulated/0/Download/Test1.m4a",true));
+        } else {
+            Log.i("info", "no data");
+            audios.add(new Audio("test1", "unknown", 10, "/storage/emulated/0/Download/Test1.m4a", true));
 
-        audios.add(new Audio("test2","unknown",10,"/storage/emulated/0/Download/Test2.m4a",true));
+            audios.add(new Audio("test2", "unknown", 10, "/storage/emulated/0/Download/Test2.m4a", true));
 
-        audios.add(new Audio("test3","unknown",10,"/storage/emulated/0/Download/Test3.m4a",true));
+            audios.add(new Audio("test3", "unknown", 10, "/storage/emulated/0/Download/Test3.m4a", true));
         }
         list = findViewById(R.id.audioList);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(list.getContext(),
@@ -136,13 +144,14 @@ public class MainActivity extends AppCompatActivity {
         a.notifyDataSetChanged();
         menuBtn = findViewById(R.id.overflow_menu);
         menuBtn.setOnClickListener(v -> {
-            Log.i("info","openMenu");
+            Log.i("info", "openMenu");
             showPopupMenu(v);
         });
         input = findViewById(R.id.input);
         input.addTextChangedListener(new TextWatcher() {
 
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
 
             public void beforeTextChanged(CharSequence s, int start,
                                           int count, int after) {
@@ -150,14 +159,14 @@ public class MainActivity extends AppCompatActivity {
 
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                Log.i("TEXT","CHANGED");
-                String value = ((EditText)input).getText().toString();
+                Log.i("TEXT", "CHANGED");
+                String value = ((EditText) input).getText().toString();
                 a.getFilter().filter(value);
             }
         });
         input.setOnEditorActionListener((v, actionId, event) -> {
-            if(actionId== EditorInfo.IME_ACTION_DONE){
-                Log.i("info","finished writing");
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                Log.i("info", "finished writing");
                 getWindow().setSoftInputMode(
                         WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
                 );
@@ -200,41 +209,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void checkLog() {
-        //TODO fix 401 error when logged in
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://84.201.143.25:8080/audios/all";
+        Log.i("check", "log");
+        String url2 = "http://84.201.143.25:8081/audios/all";
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url,null, new Response.Listener<JSONObject>() {
+        StringRequest jsonObjectRequest = new StringRequest(Request.Method.GET, url2, new Response.Listener<String>() {
             @Override
-            public void onResponse(JSONObject response) {
+            public void onResponse(String response) {
+                Toast.makeText(getApplicationContext(), "Checked", Toast.LENGTH_SHORT).show();
                 if (response != null) {
-                     Log.i("log",response.toString());
+                    Log.i("log", response.toString());
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if(error instanceof ServerError)
+                if (error instanceof ServerError)
                     Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
-                if(error instanceof AuthFailureError)
-                {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                if (error instanceof AuthFailureError) {
+                    Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
                     lauchLogin();
                 }
-                if(error instanceof NetworkError)
+                if (error instanceof TimeoutError) {
+                    Log.e("time", "out");
+                }
+                if (error instanceof ParseError) {
+                    Log.e("parse", "wrong");
+                }
+                if (error instanceof NetworkError)
                     Log.e("net-error", String.valueOf(error));
             }
         });
+        RequestQueue queue = MySingleton.getInstance(getApplicationContext()).
+                getRequestQueue();
         queue.add(jsonObjectRequest);
     }
 
-    void lauchLogin(){
+    void lauchLogin() {
         audioActivityResultLauncher.launch(new Intent(this, LoginActivity.class));
 
     }
 
     @Override
     protected void onStop() {
-        Log.i("onStop","onStop");
+        Log.i("onStop", "onStop");
         super.onStop();
         String filename = "data";
         String fileContents = new Gson().toJson(a.getAudios());
@@ -245,16 +262,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected boolean getDataFromFile(){
+    protected boolean getDataFromFile() {
         String contents;
         FileInputStream fis = null;
         try {
             fis = getApplicationContext().openFileInput("data");
         } catch (FileNotFoundException e) {
-            Log.i("info","file not found");
+            Log.i("info", "file not found");
             e.printStackTrace();
         }
-        if(fis!=null){
+        if (fis != null) {
             InputStreamReader inputStreamReader =
                     new InputStreamReader(fis, StandardCharsets.UTF_8);
             StringBuilder stringBuilder = new StringBuilder();
@@ -269,15 +286,17 @@ public class MainActivity extends AppCompatActivity {
             } finally {
                 contents = stringBuilder.toString();
             }
-            audios.changeData(new Gson().fromJson(contents, new TypeToken<List<Audio>>(){}.getType()));
-        return true;}
+            audios.changeData(new Gson().fromJson(contents, new TypeToken<List<Audio>>() {
+            }.getType()));
+            return true;
+        }
         return false;
 
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState){
-        Log.i("info","onSaveInstanceState");
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.i("info", "onSaveInstanceState");
         super.onSaveInstanceState(outState);
         outState.putString("audios", new Gson().toJson(a.getAudios()));
     }
@@ -293,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
         popupMenu.inflate(R.menu.overflow_menu);
 
-        popupMenu.setOnDismissListener(menu -> Log.i("info","close Menu"));
+        popupMenu.setOnDismissListener(menu -> Log.i("info", "close Menu"));
         popupMenu.show();
     }
 
@@ -305,8 +324,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openRecordAudio(View view) {
-        if(!mediaPlayer.isPlaying())
-        audioActivityResultLauncher.launch(new Intent(this, RecordAudioActivity.class));
+        if (!mediaPlayer.isPlaying())
+            audioActivityResultLauncher.launch(new Intent(this, RecordAudioActivity.class));
     }
 
 //    public void importFromFile(View view) {
@@ -315,12 +334,12 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public void openTelegramImport(View view) {
-        if(!mediaPlayer.isPlaying())
-        audioActivityResultLauncher.launch(new Intent(this, TelegramActivity.class));
+        if (!mediaPlayer.isPlaying())
+            audioActivityResultLauncher.launch(new Intent(this, TelegramActivity.class));
     }
 
     public void openWhatsAppImport(View view) {
-        Log.i("info","import from whatsapp");
+        Log.i("info", "import from whatsapp");
     }
 
     public void toggleMenu(View view) {
@@ -329,14 +348,13 @@ public class MainActivity extends AppCompatActivity {
         ExtendedFloatingActionButton fab2 = findViewById(R.id.fab2);
         ExtendedFloatingActionButton fab3 = findViewById(R.id.fab3);
         ExtendedFloatingActionButton fab4 = findViewById(R.id.fab4);
-        if(!isFloatingMenuOpen){
+        if (!isFloatingMenuOpen) {
             fab0.setImageResource(R.drawable.ic_close);
             fab1.setVisibility(View.VISIBLE);
             fab2.setVisibility(View.VISIBLE);
             fab3.setVisibility(View.VISIBLE);
             fab4.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             fab0.setImageResource(R.drawable.ic_add);
             fab1.setVisibility(View.INVISIBLE);
             fab2.setVisibility(View.INVISIBLE);
@@ -348,8 +366,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void logout(MenuItem item) {
         // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://84.201.143.25:8080/logout";
+        String url = "http://84.201.143.25:8081/logout";
 
 // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -361,13 +378,13 @@ public class MainActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if(error instanceof ServerError)
+                if (error instanceof ServerError)
                     Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
-                if(error instanceof AuthFailureError)
-                {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                if (error instanceof AuthFailureError) {
+                    Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
                     Toast.makeText(getApplicationContext(), "Невозможно выйти из системы", Toast.LENGTH_SHORT).show();
                 }
-                if(error instanceof NetworkError)
+                if (error instanceof NetworkError)
                     Toast.makeText(getApplicationContext(), "Проблемы с интернетом", Toast.LENGTH_SHORT).show();
             }
         });
@@ -380,9 +397,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playTune(String path) throws IOException {
-        Log.i("play","tune");
+        Log.i("play", "tune");
         Uri myUri = Uri.fromFile(new File(path));
-        
+
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioAttributes(
                 new AudioAttributes.Builder()
@@ -399,9 +416,9 @@ public class MainActivity extends AppCompatActivity {
         View v = Objects.requireNonNull(list.getLayoutManager()).findViewByPosition(position);
         ImageButton playBtn = Objects.requireNonNull(v).findViewById(R.id.playBtn);
         playBtn.setImageResource(R.drawable.ic_play_circle_48);
-        Log.i("pause","tune");
-        if(mediaPlayer.isPlaying())
-        mediaPlayer.stop();
+        Log.i("pause", "tune");
+        if (mediaPlayer.isPlaying())
+            mediaPlayer.stop();
         mediaPlayer.release();
 //        mediaPlayer.seekTo(0);
     }

@@ -14,6 +14,8 @@ import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -62,7 +64,8 @@ public class RecordAudioActivity extends AppCompatActivity {
                 chronometer.stop();
                 isRecording = false;
                 recordStop();
-                audio = new Audio(recordFile, "unknown",10,path,true);
+                File f = new File(path);
+                audio = new Audio(recordFile.substring(0,recordFile.length()-4), "unknown",10,path,true);
             } else {
                 if (askRuntimePermission()) {
                     try {

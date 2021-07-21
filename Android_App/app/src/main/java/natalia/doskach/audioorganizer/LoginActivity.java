@@ -70,9 +70,9 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Введите пароль", Toast.LENGTH_SHORT).show();
         }
         if(!loginT.isEmpty() & !passwordT.isEmpty()){
-            // Instantiate the RequestQueue.
-            RequestQueue queue = Volley.newRequestQueue(this);
-            String url ="http://84.201.143.25:8080/login";
+            RequestQueue queue = MySingleton.getInstance(this.getApplicationContext()).
+                    getRequestQueue();
+            String url ="http://84.201.143.25:8081/login";
 
             // Request a string response from the provided URL.
             StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -107,8 +107,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
             };
-
-// Add the request to the RequestQueue.
             queue.add(stringRequest);
         }
     }

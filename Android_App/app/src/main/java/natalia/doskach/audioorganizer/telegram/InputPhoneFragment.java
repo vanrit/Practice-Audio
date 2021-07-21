@@ -18,6 +18,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 
+import it.tdlight.common.utils.CantLoadLibrary;
 import natalia.doskach.audioorganizer.MainActivity;
 import natalia.doskach.audioorganizer.R;
 
@@ -77,7 +78,7 @@ public class InputPhoneFragment extends Fragment {
 
     }
 
-    private void changeLayoutToCode() {
+    void changeLayoutToCode() {
         prompt.setText("Введите проверочный код из Telegram");
         text.setText("");
         isPhoneMode = false;
@@ -101,30 +102,22 @@ public class InputPhoneFragment extends Fragment {
                     getActivity().getWindow().setSoftInputMode(
                             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
                     );
-                    pb.setVisibility(View.VISIBLE);
                     if(isPhoneMode){
                         try {
                             Log.i("info","send phone");
-                            Thread.sleep(2000);
-                            pb.setVisibility(View.INVISIBLE);
-                        } catch (InterruptedException e) {
+                            Example.sendPhone(this.toString());
+                        } catch (InterruptedException | CantLoadLibrary e) {
                             e.printStackTrace();
                         }
                         changeLayoutToCode();
                     }
                     else{
-                        try {
-                            Log.i("info","send code");
-                            Thread.sleep(2000);
-                            pb.setVisibility(View.INVISIBLE);
-                            ArrayList<ChatItems> chats = new ArrayList<>();
-                            chats.add(new ChatItems("1","Mum"));
-                            chats.add(new ChatItems("1","Cat"));
-                            chats.add(new ChatItems("1","Friend"));
-                            ((TelegramActivity)getActivity()).changeFragmentToChats(chats);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        Log.i("info","send code");
+                        ArrayList<ChatItems> chats = new ArrayList<>();
+                        chats.add(new ChatItems("1","Полина"));
+                        chats.add(new ChatItems("1","Машенька"));
+                        chats.add(new ChatItems("1","Дмитрий Подбородов"));
+                        ((TelegramActivity)getActivity()).changeFragmentToChats(chats);
                     }
 
 
