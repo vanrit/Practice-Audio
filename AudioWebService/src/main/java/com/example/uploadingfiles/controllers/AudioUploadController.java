@@ -68,7 +68,7 @@ public class AudioUploadController {
 	public String getMethods() {
 
 		String answer = "Доступные методы:<br>" +
-				"1) 84.201.143.25:8081/all<br>" +
+				"1) 84.201.143.25:8081/audios/all<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: JSON, содержащий список всех аудиофайлов, с описанием их полей(record_id, user_id, path, record_name, duration, source, source_id, source_author)<br><br>" +
 				"2) 84.201.143.25:8081/audios/*filename*<br>" +
