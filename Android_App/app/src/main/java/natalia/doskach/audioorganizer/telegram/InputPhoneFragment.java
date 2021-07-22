@@ -114,9 +114,16 @@ public class InputPhoneFragment extends Fragment {
                     else{
                         Log.i("info","send code");
                         ArrayList<ChatItems> chats = new ArrayList<>();
-                        chats.add(new ChatItems("1","Полина"));
+                        chats.add(new ChatItems("1","Telegram"));
                         chats.add(new ChatItems("1","Машенька"));
-                        chats.add(new ChatItems("1","Дмитрий Подбородов"));
+                        chats.add(new ChatItems("1","Mobile Dev Jobs - вакансии..."));
+                        chats.add(new ChatItems("1","ПИ | 2 курс | Чат"));
+                        chats.add(new ChatItems("1","ПИ | 2 курс | Важное"));
+                        chats.add(new ChatItems("1","ProfitGate - экономика, трейдинг"));
+                        chats.add(new ChatItems("1","Трейдер Евгений Черных"));
+                        chats.add(new ChatItems("1","Mr Mozart"));
+                        chats.add(new ChatItems("1","Вышка для своих"));
+                        chats.add(new ChatItems("1","Алексей Карякин"));
                         ((TelegramActivity)getActivity()).changeFragmentToChats(chats);
                     }
 

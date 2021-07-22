@@ -63,16 +63,16 @@ public class LoginActivity extends AppCompatActivity {
     public void signin(View view) {
         String loginT = login.getText().toString();
         String passwordT = password.getText().toString();
-        if(loginT.isEmpty()){
+        if (loginT.isEmpty()) {
             Toast.makeText(this, "Введите логин", Toast.LENGTH_SHORT).show();
         }
-        if(passwordT.isEmpty()){
+        if (passwordT.isEmpty()) {
             Toast.makeText(this, "Введите пароль", Toast.LENGTH_SHORT).show();
         }
-        if(!loginT.isEmpty() & !passwordT.isEmpty()){
+        if (!loginT.isEmpty() & !passwordT.isEmpty()) {
             RequestQueue queue = MySingleton.getInstance(this.getApplicationContext()).
                     getRequestQueue();
-            String url ="http://84.201.143.25:8081/login";
+            String url = "http://84.201.143.25:8081/login";
 
             // Request a string response from the provided URL.
             StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -87,21 +87,23 @@ public class LoginActivity extends AppCompatActivity {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    if(error instanceof ServerError)
+                    if (error instanceof ServerError)
                         Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
-                    if(error instanceof AuthFailureError)
-                    {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                    Toast.makeText(getApplicationContext(), "Ошибка сервера", Toast.LENGTH_SHORT).show();
+                    if (error instanceof AuthFailureError) {
+                        Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
                         Toast.makeText(getApplicationContext(), "Пароль или логин неверный", Toast.LENGTH_SHORT).show();
                     }
-                    if(error instanceof NetworkError)
+                    if (error instanceof NetworkError)
                         Log.e("net-error", String.valueOf(error));
+                    Toast.makeText(getApplicationContext(), "Нет интернета", Toast.LENGTH_SHORT).show();
                 }
-            }){
+            }) {
                 @Override
-                protected Map<String,String> getParams(){
-                    Map<String,String> params = new HashMap<String, String>();
-                    params.put(KEY_USERNAME,loginT);
-                    params.put(KEY_PASSWORD,passwordT);
+                protected Map<String, String> getParams() {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put(KEY_USERNAME, loginT);
+                    params.put(KEY_PASSWORD, passwordT);
                     return params;
                 }
 

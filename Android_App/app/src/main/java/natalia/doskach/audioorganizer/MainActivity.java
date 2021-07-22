@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     a.addItem(au);
                 }
                 if (result.getResultCode() == Activity.RESULT_FIRST_USER) {
-                    //synch with server
+                    //just loged in
                 }
             });
 
