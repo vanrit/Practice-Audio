@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         queue = MySingleton.getInstance(this.getApplicationContext()).
                 getRequestQueue();
-        checkLog();
+        //checkLog();
 
         Log.i("onCreate", "onCreate");
         resetPlayingTune();
@@ -178,10 +178,10 @@ public class MainActivity extends AppCompatActivity {
 
         Button fab1 = findViewById(R.id.fab1);
 
-        fab1.setOnClickListener(v -> {
-
-            Intent intent = new Intent(MainActivity.this, GetFileActivity.class);
-            startActivity(intent);
+//        fab1.setOnClickListener(v -> {
+//
+//            Intent intent = new Intent(MainActivity.this, GetFileActivity.class);
+//            startActivity(intent);
 
 //                if (!FilePath.isEmpty()) {
 //                    audios.add(new Audio(FileName, "unknown", 10, FilePath, true));
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 //                    data.putExtra("audio", audio);
 //                    setResult(RESULT_OK, data);}
 //                finish();
-        });
+//        });
 
         Button fab3 = findViewById(R.id.fab3);
 
@@ -332,17 +332,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openRecordAudio(View view) {
-        if (!mediaPlayer.isPlaying())
+        if(mediaPlayer != null)
+            mediaPlayer.release();
             audioActivityResultLauncher.launch(new Intent(this, RecordAudioActivity.class));
     }
 
-//    public void importFromFile(View view) {
-//        File path = this.getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-//        File f = new File(path,"Test1.mp4");
-//    }
+    public void importFromFile(View view) {
+        if(mediaPlayer != null)
+            mediaPlayer.release();
+            audioActivityResultLauncher.launch(new Intent(this, GetFileActivity.class));
+    }
 
     public void openTelegramImport(View view) {
-        if (!mediaPlayer.isPlaying())
+        if(mediaPlayer != null)
+            mediaPlayer.release();
             audioActivityResultLauncher.launch(new Intent(this, TelegramActivity.class));
     }
 

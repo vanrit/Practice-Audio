@@ -2,7 +2,11 @@ package natalia.doskach.audioorganizer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageButton;
 
 import java.io.File;
@@ -54,16 +58,35 @@ public class GetFileActivity extends AppCompatActivity {
         });
     }
 
+    public String getPath(Uri uri) {
+        String path = null;
+        String[] projection = { MediaStore.Files.FileColumns.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if(cursor == null){ path = uri.getPath(); }
+        else{ cursor.moveToFirst();
+        int column_index = cursor.getColumnIndexOrThrow(projection[0]);
+        path = cursor.getString(column_index);
+        cursor.close(); }
+        String mypath = ((path == null || path.isEmpty()) ? (uri.getPath()) : path);
+        if(mypath.contains("document/raw:")){
+            mypath = mypath.replace("/document/raw:","");
+        }
+    return mypath; }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICKFILE_RESULT_CODE) {
             if (resultCode == RESULT_OK) {
-                MainActivity.FilePath = data.getData().getPath();
+ //               MainActivity.FilePath = data.getData().getPath();
 //                textView1.setText(MainActivity.FilePath);
-                MainActivity.FileName = data.getData().getLastPathSegment();
+ //               MainActivity.FileName = data.getData().getLastPathSegment();
 //                textView2.setText(MainActivity.FileName);
-                audio = new Audio(MainActivity.FileName, "unknown", 10, MainActivity.FilePath, true);
+                Uri uri = data.getData();
+                String s = getPath(uri);
+                Log.i("path",s);
+                File f = new File(data.getData().getPath());
+                audio = new Audio(f.getName(), "unknown", 10, s, true);
 //                File original = new File(MainActivity.FilePath);
 //                File copied = new File(getExternalFilesDir("").getAbsolutePath());
 //                try (
@@ -86,7 +109,7 @@ public class GetFileActivity extends AppCompatActivity {
 
 //                File sourceFile = new File(MainActivity.FilePath);
 //                File destDir = new File(getExternalFilesDir("").getAbsolutePath() + "/" + MainActivity.FileName + ".mp3");
-                copyFileOrDirectory(MainActivity.FilePath, getExternalFilesDir("").getAbsolutePath());
+//                copyFileOrDirectory(MainActivity.FilePath, getExternalFilesDir("").getAbsolutePath());
 //                try {
 //                    copyFileUsingStream(sourceFile, destDir);
 //                } catch (IOException e) {
