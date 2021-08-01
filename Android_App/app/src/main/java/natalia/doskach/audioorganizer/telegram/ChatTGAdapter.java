@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.drinkless.td.libcore.telegram.TdApi;
+
 import java.util.ArrayList;
 
 import natalia.doskach.audioorganizer.R;
@@ -62,13 +64,12 @@ public class ChatTGAdapter extends RecyclerView.Adapter<ChatTGAdapter.ViewHolder
 
         @Override
         public void onClick(View view) {
-            Log.i(mData.get(position).title,"clicked");
+            Log.i(mData.get(getAdapterPosition()).title,"clicked");
             view.setBackgroundColor(view.getContext().getResources().getColor(R.color.light_gray));
-            ArrayList<AudioItems> chats = new ArrayList<>();
-            chats.add(new AudioItems("1","1","@masha270810","21.07.21 8:30:15"));
-            chats.add(new AudioItems("1","1","@natalia_dos","20.07.21 15:22:47"));
-            chats.add(new AudioItems("1","1","@masha270810","20.07.21 15:19:05"));
-            ((TelegramActivity)context).changeFragmentToAudios(chats);
+            long chat_id = mData.get(getAdapterPosition()).id;
+            Example.chat_id = chat_id;
+
+
         }
     }
 }

@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.drinkless.td.libcore.telegram.TdApi;
+
 import java.util.ArrayList;
 
 import natalia.doskach.audioorganizer.Audio;

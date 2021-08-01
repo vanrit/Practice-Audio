@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import org.drinkless.td.libcore.telegram.TdApi;
+
 import java.util.ArrayList;
 
 import it.tdlight.common.utils.CantLoadLibrary;
@@ -103,28 +105,26 @@ public class InputPhoneFragment extends Fragment {
                             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
                     );
                     if(isPhoneMode){
-                        try {
-                            Log.i("info","send phone");
-                            Example.sendPhone(this.toString());
-                        } catch (InterruptedException | CantLoadLibrary e) {
-                            e.printStackTrace();
-                        }
+                        Log.i(v.getText().toString(),"send phone");
+                        Example.getClient().send(new TdApi.SetAuthenticationPhoneNumber(v.getText().toString(), null), new Example.AuthorizationRequestHandler());
+//                            Example.sendPhone(this.toString());
                         changeLayoutToCode();
                     }
                     else{
                         Log.i("info","send code");
-                        ArrayList<ChatItems> chats = new ArrayList<>();
-                        chats.add(new ChatItems("1","Telegram"));
-                        chats.add(new ChatItems("1","Машенька"));
-                        chats.add(new ChatItems("1","Mobile Dev Jobs - вакансии..."));
-                        chats.add(new ChatItems("1","ПИ | 2 курс | Чат"));
-                        chats.add(new ChatItems("1","ПИ | 2 курс | Важное"));
-                        chats.add(new ChatItems("1","ProfitGate - экономика, трейдинг"));
-                        chats.add(new ChatItems("1","Трейдер Евгений Черных"));
-                        chats.add(new ChatItems("1","Mr Mozart"));
-                        chats.add(new ChatItems("1","Вышка для своих"));
-                        chats.add(new ChatItems("1","Алексей Карякин"));
-                        ((TelegramActivity)getActivity()).changeFragmentToChats(chats);
+                        Example.getClient().send(new TdApi.CheckAuthenticationCode(v.getText().toString()), new Example.AuthorizationRequestHandler());
+//                        ArrayList<ChatItems> chats = new ArrayList<>();
+//                        chats.add(new ChatItems("1","Telegram"));
+//                        chats.add(new ChatItems("1","Машенька"));
+//                        chats.add(new ChatItems("1","Mobile Dev Jobs - вакансии..."));
+//                        chats.add(new ChatItems("1","ПИ | 2 курс | Чат"));
+//                        chats.add(new ChatItems("1","ПИ | 2 курс | Важное"));
+//                        chats.add(new ChatItems("1","ProfitGate - экономика, трейдинг"));
+//                        chats.add(new ChatItems("1","Трейдер Евгений Черных"));
+//                        chats.add(new ChatItems("1","Mr Mozart"));
+//                        chats.add(new ChatItems("1","Вышка для своих"));
+//                        chats.add(new ChatItems("1","Алексей Карякин"));
+//                        ((TelegramActivity)getActivity()).changeFragmentToChats(chats);
                     }
 
 
