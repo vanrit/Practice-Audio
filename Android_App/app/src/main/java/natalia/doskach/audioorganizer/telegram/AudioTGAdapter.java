@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.drinkless.td.libcore.telegram.Client;
 import org.drinkless.td.libcore.telegram.TdApi;
 
 import java.util.ArrayList;
@@ -42,7 +43,17 @@ public class AudioTGAdapter extends RecyclerView.Adapter<AudioTGAdapter.ViewHold
         String date = mData.get(position).date;
         holder.sender.setText(sender);
         holder.date.setText(date);
-
+        TdApi.GetUser user = new TdApi.GetUser(mData.get(position).senderID);
+        Example.getClient().send(user, new Client.ResultHandler() {
+            @Override
+            public void onResult(TdApi.Object object) {
+                if (object instanceof TdApi.User) {
+                    holder.sender.setText(((TdApi.User) object).username);
+                    notifyItemChanged(position);
+                    return;
+                }
+            }
+        });
     }
 
     // total number of rows
@@ -68,16 +79,13 @@ public class AudioTGAdapter extends RecyclerView.Adapter<AudioTGAdapter.ViewHold
         public void onClick(View view) {
             Log.i("audio","clicked");
             view.setBackgroundColor(view.getContext().getResources().getColor(R.color.light_gray));
-            Intent data = new Intent();
-            Audio audio = new Audio("TG "+date.getText().toString(),sender.getText().toString(),4,"/storage/emulated/0/Download/Test3.m4a",true);
-//---set the data to pass back---
-            if(audio == null)
-                ((Activity)view.getContext()).setResult(Activity.RESULT_CANCELED, data);
-            else{
-                data.putExtra("audio", audio);
-                ((Activity)view.getContext()).setResult(Activity.RESULT_OK, data);}
-//---close the activity---
-            ((Activity)view.getContext()).finish();
+            Audio audio = new Audio("TG "+date.getText().toString(),sender.getText().toString(),4,"",true);
+            Log.i("audio chosen",audio.name);
+            ((TelegramActivity)view.getContext()).audio = audio;
+            Example.audio_id = mData.get(getAdapterPosition()).id;
+            Example.chooseAChat = false;
+            Example.proceedLatch.countDown();
+
         }
     }
 }

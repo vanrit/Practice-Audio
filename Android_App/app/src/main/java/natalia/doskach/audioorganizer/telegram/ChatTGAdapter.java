@@ -1,7 +1,5 @@
 package natalia.doskach.audioorganizer.telegram;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,8 +8,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
-
-import org.drinkless.td.libcore.telegram.TdApi;
 
 import java.util.ArrayList;
 
@@ -68,8 +64,7 @@ public class ChatTGAdapter extends RecyclerView.Adapter<ChatTGAdapter.ViewHolder
             view.setBackgroundColor(view.getContext().getResources().getColor(R.color.light_gray));
             long chat_id = mData.get(getAdapterPosition()).id;
             Example.chat_id = chat_id;
-
-
+            Example.chatIDLatch.countDown();
         }
     }
 }

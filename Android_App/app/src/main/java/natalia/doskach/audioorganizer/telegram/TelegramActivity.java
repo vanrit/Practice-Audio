@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.opengl.Visibility;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,40 +27,67 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import it.tdlight.common.utils.CantLoadLibrary;
+import natalia.doskach.audioorganizer.Audio;
 import natalia.doskach.audioorganizer.R;
 
 public class TelegramActivity extends AppCompatActivity {
     FragmentTransaction fTrans;
     InputPhoneFragment f1;
     static Context context;
+    ArrayList<ChatItems> chats;
+    int page = 1;
+    public Audio audio;
+
+    @Override
+    public void onBackPressed() {
+        if(page == 4)
+        {   Example.proceedLatch.countDown();
+            changeFragmentToChats(chats);
+
+        }
+    }
+
+    public void returnAudio(String path){
+        Intent data = new Intent();
+        audio.path = path;
+//---set the data to pass back---
+        if(audio == null)
+            this.setResult(Activity.RESULT_CANCELED, data);
+        else{
+            data.putExtra("audio", audio);
+            this.setResult(Activity.RESULT_OK, data);}
+//---close the activity---
+            this.finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
             context = getApplicationContext();
             final Activity a = this;
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                    Example.main(getApplicationContext(),a);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                }
-            };
-             thread.start();
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_telegram);
         fTrans = getSupportFragmentManager().beginTransaction();
         fTrans.setReorderingAllowed(true);
-
-
         fTrans.add(R.id.telegramLayout, InputPhoneFragment.class, null) //TODO change
                 .commit();
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Example.main(getApplicationContext(),a);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
 
 }
     public void changeFragmentToChats(ArrayList<ChatItems> i) {
+        page = 3;
+        chats = i;
         Bundle b = new Bundle();
         b.putSerializable("chats",i);
         fTrans = getSupportFragmentManager().beginTransaction();
@@ -68,6 +96,7 @@ public class TelegramActivity extends AppCompatActivity {
     }
 
     public void changeFragmentToAudios(ArrayList<AudioItems> i) {
+        page = 4;
         Bundle b = new Bundle();
         b.putSerializable("audios",i);
         fTrans = getSupportFragmentManager().beginTransaction();
@@ -78,7 +107,6 @@ public class TelegramActivity extends AppCompatActivity {
     public static void makeAToast(String info) {
         Toast.makeText(context, info, Toast.LENGTH_SHORT).show();
     }
-
 
 }
 

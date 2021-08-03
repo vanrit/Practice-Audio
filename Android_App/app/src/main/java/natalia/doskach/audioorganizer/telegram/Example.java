@@ -1,19 +1,24 @@
 package natalia.doskach.audioorganizer.telegram;
 
 
+import org.apache.commons.io.FileUtils;
 import org.drinkless.td.libcore.telegram.TdApi;
 import org.drinkless.td.libcore.telegram.Client;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,11 +26,10 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static natalia.doskach.audioorganizer.telegram.TelegramActivity.*;
 
 /**
  * Example class for TDLib usage from Java.
@@ -36,34 +40,51 @@ public final class Example {
     private static Activity activity = null;
 
     private static TdApi.AuthorizationState authorizationState = null;
-    private static volatile boolean haveAuthorization = false;
+    public static volatile boolean haveAuthorization = false;
     private static volatile boolean haveChats = false;
+    public static volatile boolean haveChatID = false;
     private static volatile boolean haveAudios = false;
     private static volatile boolean needQuit = false;
     private static volatile boolean canQuit = false;
     public static volatile long chat_id = -1;
+    public static volatile long audio_id = -1;
+    public static volatile ArrayList<AudioItems> audios;
 
     private static final Client.ResultHandler defaultHandler = new DefaultHandler();
 
-    private static final Lock authorizationLock = new ReentrantLock();
-    private static final Condition gotAuthorization = authorizationLock.newCondition();
+    private static Lock authorizationLock = new ReentrantLock();
+    private static Condition gotAuthorization = authorizationLock.newCondition();
 
-    private static final ConcurrentMap<Integer, TdApi.User> users = new ConcurrentHashMap<Integer, TdApi.User>();
-    private static final ConcurrentMap<Integer, TdApi.BasicGroup> basicGroups = new ConcurrentHashMap<Integer, TdApi.BasicGroup>();
-    private static final ConcurrentMap<Integer, TdApi.Supergroup> supergroups = new ConcurrentHashMap<Integer, TdApi.Supergroup>();
-    private static final ConcurrentMap<Integer, TdApi.SecretChat> secretChats = new ConcurrentHashMap<Integer, TdApi.SecretChat>();
+    private static Lock chatsLock = new ReentrantLock();
+    private static Condition gotChats = chatsLock.newCondition();
 
-    private static final ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<Long, TdApi.Chat>();
-    private static final NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
+    public static CountDownLatch chatIDLatch = new CountDownLatch(1);
+    public static boolean chooseAChat = true;
+    public static CountDownLatch audiosLatch = new CountDownLatch(1);
+    public static CountDownLatch proceedLatch = new CountDownLatch(1);
+    public static CountDownLatch waitForAudioFile = new CountDownLatch(1);
+
+    public static Lock audiosLock = new ReentrantLock();
+    public static Condition gotAudios = audiosLock.newCondition();
+
+    private static ConcurrentMap<Integer, TdApi.User> users = new ConcurrentHashMap<Integer, TdApi.User>();
+    private static ConcurrentMap<Integer, TdApi.BasicGroup> basicGroups = new ConcurrentHashMap<Integer, TdApi.BasicGroup>();
+    private static ConcurrentMap<Integer, TdApi.Supergroup> supergroups = new ConcurrentHashMap<Integer, TdApi.Supergroup>();
+    private static ConcurrentMap<Integer, TdApi.SecretChat> secretChats = new ConcurrentHashMap<Integer, TdApi.SecretChat>();
+
+    private static ConcurrentMap<Long, TdApi.Chat> chats = new ConcurrentHashMap<Long, TdApi.Chat>();
+    private static NavigableSet<OrderedChat> mainChatList = new TreeSet<OrderedChat>();
     private static boolean haveFullMainChatList = false;
 
-    private static final ConcurrentMap<Integer, TdApi.UserFullInfo> usersFullInfo = new ConcurrentHashMap<Integer, TdApi.UserFullInfo>();
-    private static final ConcurrentMap<Integer, TdApi.BasicGroupFullInfo> basicGroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.BasicGroupFullInfo>();
-    private static final ConcurrentMap<Integer, TdApi.SupergroupFullInfo> supergroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.SupergroupFullInfo>();
 
-    private static final String newLine = System.getProperty("line.separator");
-    private static final String commandsLine = "Enter command (gcs - GetChats, gc <chatId> - GetChat, me - GetMe, sm <chatId> <message> - SendMessage, lo - LogOut, q - Quit): ";
+    private static ConcurrentMap<Integer, TdApi.UserFullInfo> usersFullInfo = new ConcurrentHashMap<Integer, TdApi.UserFullInfo>();
+    private static ConcurrentMap<Integer, TdApi.BasicGroupFullInfo> basicGroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.BasicGroupFullInfo>();
+    private static ConcurrentMap<Integer, TdApi.SupergroupFullInfo> supergroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.SupergroupFullInfo>();
+
+    private static String newLine = System.getProperty("line.separator");
+    private static String commandsLine = "Enter command (gcs - GetChats, gc <chatId> - GetChat, me - GetMe, sm <chatId> <message> - SendMessage, lo - LogOut, q - Quit): ";
     private static volatile String currentPrompt = null;
+    private static volatile int messageCount = 0;
 
     static {
         try {
@@ -72,7 +93,8 @@ public final class Example {
             e.printStackTrace();
         }
     }
-    public static Client getClient(){
+
+    public static Client getClient() {
         return client;
     }
 
@@ -131,10 +153,10 @@ public final class Example {
                 client.send(new TdApi.CheckDatabaseEncryptionKey(), new AuthorizationRequestHandler());
                 break;
             case TdApi.AuthorizationStateWaitPhoneNumber.CONSTRUCTOR: {
-                Log.i("info","Please enter phone number: ");
- //               String phoneNumber = "89643500333";
+                Log.i("info", "Please enter phone number: ");
+                //               String phoneNumber = "89643500333";
 //                String phoneNumber = promptString("Please enter phone number: ");
-              //  client.send(new TdApi.SetAuthenticationPhoneNumber(phoneNumber, null), new AuthorizationRequestHandler());
+                //  client.send(new TdApi.SetAuthenticationPhoneNumber(phoneNumber, null), new AuthorizationRequestHandler());
                 break;
             }
             case TdApi.AuthorizationStateWaitOtherDeviceConfirmation.CONSTRUCTOR: {
@@ -143,7 +165,7 @@ public final class Example {
                 break;
             }
             case TdApi.AuthorizationStateWaitCode.CONSTRUCTOR: {
-                Log.i("info","Please enter authentication code: ");
+                Log.i("info", "Please enter authentication code: ");
                 String code = promptString("Please enter authentication code: ");
                 client.send(new TdApi.CheckAuthenticationCode(code), new AuthorizationRequestHandler());
                 break;
@@ -188,9 +210,10 @@ public final class Example {
                 System.err.println("Unsupported authorization state:" + newLine + Example.authorizationState);
         }
     }
-    public static void logout(){
-                            haveAuthorization = false;
-                    client.send(new TdApi.LogOut(), defaultHandler);
+
+    public static void logout() {
+        haveAuthorization = false;
+        client.send(new TdApi.LogOut(), defaultHandler);
 
     }
 
@@ -227,7 +250,7 @@ public final class Example {
     }
 
     private static void getCommand() {
-        Log.i("get","command");
+        Log.i("get", "command");
         client.send(new TdApi.GetMe(), defaultHandler);
 //        String command = promptString(commandsLine);
 //        String[] commands = command.split(" ", 2);
@@ -283,7 +306,6 @@ public final class Example {
                 client.send(new TdApi.GetChats(new TdApi.ChatListMain(), offsetOrder, offsetChatId, limit - mainChatList.size()), new Client.ResultHandler() {
                     @Override
                     public void onResult(TdApi.Object object) {
-
                         switch (object.getConstructor()) {
                             case TdApi.Error.CONSTRUCTOR:
                                 System.err.println("Receive an error for GetChats:" + newLine + object);
@@ -296,7 +318,7 @@ public final class Example {
                                     }
                                 }
                                 // chatsList had already been received through updates, let's retry request
-          //                      getMainChatList(limit);
+                                getMainChatList(limit);
                                 break;
                             default:
                                 System.err.println("Receive wrong response from TDLib:" + newLine + object);
@@ -305,25 +327,32 @@ public final class Example {
                 });
                 return;
             }
-            Log.i("start ","working w/ chats");
+            Log.i("start ", "working w/ chats");
             java.util.Iterator<OrderedChat> iter = mainChatList.iterator();
             ArrayList<ChatItems> chatsList = new ArrayList<>();
 
- //           String header = "First " + limit + " chat(s) out of " + mainChatList.size() + " known chat(s):";
- //           Log.e("IMP",header);
+            //           String header = "First " + limit + " chat(s) out of " + mainChatList.size() + " known chat(s):";
+            //           Log.e("IMP",header);
 //            TelegramActivity.makeAToast(header);
             for (int i = 0; i < limit && i < mainChatList.size(); i++) {
                 long chatId = iter.next().chatId;
                 TdApi.Chat chat = chats.get(chatId);
                 synchronized (chat) {
-                    chatsList.add(new ChatItems( chatId,chat.title));
+                    chatsList.add(new ChatItems(chatId, chat.title));
                     String chatInfo = chatId + ": " + chat.title;
- //                   TelegramActivity.makeAToast(chatInfo);
- //                   Log.e("IMP",chatInfo);
+                    //                   TelegramActivity.makeAToast(chatInfo);
+                    //                   Log.e("IMP",chatInfo);
                 }
             }
 
-            ((TelegramActivity)activity).changeFragmentToChats(chatsList);
+            ((TelegramActivity) activity).changeFragmentToChats(chatsList);
+            haveChats = true;
+            chatsLock.lock();
+            try {
+                gotChats.signal();
+            } finally {
+                chatsLock.unlock();
+            }
 
         }
     }
@@ -338,23 +367,58 @@ public final class Example {
 //    }
 
     public static void main(Context con, Activity a) throws InterruptedException {
+        audios = new ArrayList<>();
         context = con;
         activity = a;
         haveChats = false;
         haveAudios = false;
+        haveAuthorization = false;
+        haveFullMainChatList = false;
         chat_id = -1;
+        authorizationLock = new ReentrantLock();
+        gotAuthorization = authorizationLock.newCondition();
+
+        chatsLock = new ReentrantLock();
+        gotChats = chatsLock.newCondition();
+
+        chatIDLatch = new CountDownLatch(1);
+        chooseAChat = true;
+        audiosLatch = new CountDownLatch(1);
+        proceedLatch = new CountDownLatch(1);
+        waitForAudioFile = new CountDownLatch(1);
+
+        audiosLock = new ReentrantLock();
+        gotAudios = audiosLock.newCondition();
+
+        users = new ConcurrentHashMap<Integer, TdApi.User>();
+        basicGroups = new ConcurrentHashMap<Integer, TdApi.BasicGroup>();
+        supergroups = new ConcurrentHashMap<Integer, TdApi.Supergroup>();
+        secretChats = new ConcurrentHashMap<Integer, TdApi.SecretChat>();
+
+        chats = new ConcurrentHashMap<Long, TdApi.Chat>();
+        mainChatList = new TreeSet<OrderedChat>();
+        haveFullMainChatList = false;
+
+
+        usersFullInfo = new ConcurrentHashMap<Integer, TdApi.UserFullInfo>();
+        basicGroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.BasicGroupFullInfo>();
+        supergroupsFullInfo = new ConcurrentHashMap<Integer, TdApi.SupergroupFullInfo>();
+
+        newLine = System.getProperty("line.separator");
+        commandsLine = "Enter command (gcs - GetChats, gc <chatId> - GetChat, me - GetMe, sm <chatId> <message> - SendMessage, lo - LogOut, q - Quit): ";
+        String currentPrompt = null;
+        int messageCount = 0;
         // disable TDLib log
-        Client.execute(new TdApi.SetLogVerbosityLevel(0));
+        Client.execute(new TdApi.SetLogVerbosityLevel(25));
         if (Client.execute(new TdApi.SetLogStream(new TdApi.LogStreamFile(context.getFilesDir().getAbsolutePath() + "/tdlib.log", 1 << 27, false))) instanceof TdApi.Error) {
             throw new IOError(new IOException("Write access to the current directory is required"));
         }
 
         // create client
         client = Client.create(new UpdateHandler(), null, null);
-
         // test Client.execute
         defaultHandler.onResult(Client.execute(new TdApi.GetTextEntities("@telegram /test_command https://telegram.org telegram.me @gif @test")));
-//        logout(); //TODO: logout
+        logout();
         // main loop
         while (!needQuit) {
             // await authorization
@@ -368,24 +432,107 @@ public final class Example {
             }
 
             if (haveAuthorization) {
-                while(!haveChats){
                 getMainChatList(20);
-}
-                while(chat_id == -1){
-                    Thread.sleep(10);
+                chatsLock.lock();
+                try {
+                    while (!haveChats) {
+                        gotChats.await();
+                    }
+                } finally {
+                    chatsLock.unlock();
                 }
-                while(!haveAudios){
-                    TdApi.Function getChatHistory = new TdApi.GetChatHistory(chat_id, 0,
-                            0, 15, true); // TODO: change limit if you want more messages (max 51?)
-                    Example.getClient().send(getChatHistory, new Example.DefaultHandler());
+                Log.i("got", "chats");
+                while (chooseAChat) {
+                    chatIDLatch = new CountDownLatch(1);
+                    audiosLatch = new CountDownLatch(1);
+                    chatIDLatch.await();
+                    Log.i("got chatID", Long.toString(chat_id));
+                    int left = 100;
+                    audios.clear();
+                    getAudios(0, left);
+                    audiosLatch.await();
+                    ((TelegramActivity) a).changeFragmentToAudios(audios);
+                    proceedLatch.await();
                 }
+                Log.i("got", "audioID");
+                TdApi.DownloadFile downloadFile = new TdApi.DownloadFile((int) audio_id, 16,
+                        0, 0, false);
+                client.send(downloadFile, new Client.ResultHandler() {
+                    @Override
+                    public void onResult(TdApi.Object object) {
+                        if (object instanceof TdApi.Error) {
+                            Log.e("error", ((TdApi.Error) object).message);
+                        }
+                        if (object instanceof TdApi.File) {
+                            //start of download...
+                            Log.i("info", "start of download");
+                        }
+
+                    }
+                });
+
+                waitForAudioFile.await();
 
             }
 
-        while (!canQuit) {
-            Thread.sleep(1);
+            while (!canQuit) {
+                Thread.sleep(1);
+            }
         }
-    }}
+    }
+
+//    public static void closeClient() {
+//        needQuit = true;
+//        haveAuthorization = false;
+//        client.send(new TdApi.Close(), defaultHandler);
+//    }
+
+    private static void getAudios(long lastID, int left) {
+        Log.e("getting from", Long.toString(lastID));
+        Log.e("left:", String.valueOf(left));
+        Log.i("chatID", String.valueOf(chat_id));
+        TdApi.Function getChatHistory = new TdApi.GetChatHistory(chat_id, lastID,
+                0, left, false);
+        Example.getClient().send(getChatHistory, new Client.ResultHandler() {
+            @Override
+            public void onResult(TdApi.Object object) {
+                if (object instanceof TdApi.Error)
+                    Log.e("error", ((TdApi.Error) object).message);
+                if (object instanceof TdApi.Messages) {
+                    int count = ((TdApi.Messages) object).totalCount;
+                    Log.e("got messages:", Integer.toString(count));
+
+                    if (count == 0) {
+                        audiosLatch.countDown();
+                        return;
+                    } else {
+                        TdApi.Messages messages = (TdApi.Messages) object;
+                        long lastMessageId = messages.messages[count - 1].id;
+                        for (TdApi.Message message : messages.messages) {
+//                            Log.e("message",message.content.toString());
+                            if (message.content instanceof TdApi.MessageVoiceNote) {
+                                Date date = new java.util.Date(message.date * 1000L);
+                                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                String strDate = formatter.format(date);
+                                int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
+                                TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
+                                audios.add(new AudioItems(voice.voiceNote.voice.id, senderID, null, strDate));
+                            }
+                        }
+                        Log.i("left is", String.valueOf(left - count));
+                        if (left - count > 0)
+                            getAudios(lastMessageId, left - count);
+                        else {
+                            audiosLatch.countDown();
+                        }
+
+
+                    }
+                }
+            }
+        });
+    }
+
 
     private static class OrderedChat implements Comparable<OrderedChat> {
         final long chatId;
@@ -435,37 +582,38 @@ public final class Example {
 //                return;
 //            }
 //        }
+
+
         @Override
         public void onResult(TdApi.Object object) {
-            if (object instanceof TdApi.File) {
-                if (((TdApi.File) object).local.path.equals("")) {
-                    return;
-                }
-                System.out.println("Audio was saved here: " + ((TdApi.File) object).local.path);
-                return;
-            }
+//            if (object instanceof TdApi.File) {
+//                if (((TdApi.File) object).local.path.equals("")) {
+//                    return;
+//                }
+//                System.out.println("Audio was saved here: " + ((TdApi.File) object).local.path);
+//                return;
+//            }
             if (object instanceof TdApi.Messages) {
-                haveAudios = true;
-                Log.e("got","messages");
                 if (((TdApi.Messages) object).totalCount < 1) {  //TODO: limit for messages
                 } else {
-                    ArrayList<AudioItems> chats = new ArrayList<>();
+
                     TdApi.Messages messages = (TdApi.Messages) object;
+                    messageCount = messages.totalCount;
+                    Log.e("got messages:", Integer.toString(messageCount));
+                    long lastMessageId = messages.messages[messages.messages.length - 1].id;
                     for (TdApi.Message message : messages.messages) {
+                        Log.e("message", message.content.toString());
+//                        if (message.content instanceof TdApi.MessageVoiceNote) {
                         Date date = new java.util.Date(message.date * 1000L);
                         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                         String strDate = formatter.format(date);
-                        int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
-
-                        if (message.content instanceof TdApi.MessageVoiceNote) {
-                            TdApi.GetUser user = new TdApi.GetUser(senderID);
-                            Example.client.send(user, this);
-
-                            TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
-                            chats.add(new AudioItems(voice.voiceNote.voice.id,senderID,null,strDate));
-                        }
+//                            int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
+//                            TdApi.GetUser user = new TdApi.GetUser(senderID);
+//                            Example.client.send(user, this);
+////                            TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
+//                            audios.add(new AudioItems(voice.voiceNote.voice.id,senderID,null,strDate));
+//                        }
                     }
-                    ((TelegramActivity)context).changeFragmentToAudios(chats);
                 }
                 return;
             }
@@ -481,6 +629,23 @@ public final class Example {
         @Override
         public void onResult(TdApi.Object object) {
             switch (object.getConstructor()) {
+                case TdApi.UpdateFile.CONSTRUCTOR:
+//                    if(((TdApi.UpdateFile) object))
+                    TdApi.File f = ((TdApi.UpdateFile) object).file;
+                    if(f.local.isDownloadingCompleted){
+                        String path = ((TdApi.UpdateFile) object).file.local.path;
+                        File realFile = new File(path);
+                        if(realFile.exists())
+                            Log.i("file","exists");
+                        else
+                            Log.e("file"," doesn't exists");
+                        copyFiles(path);
+                        ((TelegramActivity) activity).returnAudio(path);
+                        client.close();
+                        waitForAudioFile.countDown();
+                    }
+
+                    break;
                 case TdApi.UpdateAuthorizationState.CONSTRUCTOR:
                     onAuthorizationStateUpdated(((TdApi.UpdateAuthorizationState) object).authorizationState);
                     break;
@@ -489,7 +654,7 @@ public final class Example {
                     TdApi.UpdateUser updateUser = (TdApi.UpdateUser) object;
                     users.put(updateUser.user.id, updateUser.user);
                     break;
-                case TdApi.UpdateUserStatus.CONSTRUCTOR:  {
+                case TdApi.UpdateUserStatus.CONSTRUCTOR: {
                     TdApi.UpdateUserStatus updateUserStatus = (TdApi.UpdateUserStatus) object;
                     TdApi.User user = users.get(updateUserStatus.userId);
                     synchronized (user) {
@@ -690,6 +855,22 @@ public final class Example {
                     break;
                 default:
                     // print("Unsupported update:" + newLine + object);
+            }
+        }
+
+        private void copyFiles(String path) {
+            String sourcePath = path;
+            File source = new File(sourcePath);
+            String name = source.getName();
+            String destinationPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+            File destination = new File(destinationPath,name);
+            try
+            {
+                FileUtils.copyFile(source, destination);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
             }
         }
     }

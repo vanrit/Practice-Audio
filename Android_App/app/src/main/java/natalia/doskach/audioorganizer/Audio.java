@@ -37,15 +37,15 @@ public class Audio implements Serializable {
     }
 
     public int getDuration(Context c) {
-        if (this.path == null && !(new File(path).exists()))
-            return 2;
+        if (this.path == null || !(new File(path).exists()))
+            return 99;
         try {
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             retriever.setDataSource(c, Uri.parse(this.path));
             String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             return Integer.parseInt(duration) / 1000;
         } catch (Exception ex) {
-            return 16;
+            return 0;
         }
 
     }

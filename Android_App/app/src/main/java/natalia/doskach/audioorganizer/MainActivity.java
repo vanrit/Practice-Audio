@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent data = result.getData();
                     assert data != null;
                     Audio au = (Audio) (data.getSerializableExtra("audio"));
+                    Log.i("audiopath",au.path);
                     au.len = au.getDuration(getApplicationContext());
                     a.addItem(au);
                 }
@@ -407,8 +408,12 @@ public class MainActivity extends AppCompatActivity {
     public void synchronize(MenuItem item) {
     }
 
+    String pathPath = null;
+
     public void playTune(String path) throws IOException {
-        Log.i("play", "tune");
+        Log.e("play tune", path);
+        if(!new File(path).exists())
+            Log.e("ERROR","file doesn't exist");
         Uri myUri = Uri.fromFile(new File(path));
 
         mediaPlayer = new MediaPlayer();
@@ -418,6 +423,19 @@ public class MainActivity extends AppCompatActivity {
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .build()
         );
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer media, int what, int extra) {
+                Log.e("playing error:",path);
+                if (what == 100)
+                {
+                    if(mediaPlayer.isPlaying())
+                               mediaPlayer.stop();
+                    mediaPlayer.release();
+                }
+                return true;
+            }
+        });
         mediaPlayer.setDataSource(getApplicationContext(), myUri);
         mediaPlayer.prepare();
         mediaPlayer.start();
