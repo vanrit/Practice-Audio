@@ -68,13 +68,13 @@ public class AudioUploadController {
 	public String getMethods() {
 
 		String answer = "Доступные методы:<br>" +
-				"1) 84.201.143.25:8081/audios/all<br>" +
+				"1) 178.154.192.134:8080/audios/all<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: JSON, содержащий список всех аудиофайлов, с описанием их полей(record_id, user_id, path, record_name, duration, source, source_id, source_author)<br><br>" +
-				"2) 84.201.143.25:8081/audios/*filename*<br>" +
+				"2) 178.154.192.134:8080/audios/*filename*<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: аудиофайл<br><br>" +
-				"3) 84.201.143.25:8081/audios/upload<br>" +
+				"3) 178.154.192.134:8080/audios/upload<br>" +
 				"* Тип запроса: POST<br>" +
 				"* Тело запроса:<br>" +
 				"	1. Поле file, содержащее аудиофайл<br>" +
@@ -84,7 +84,7 @@ public class AudioUploadController {
 				"	5. (Опционально) Поле source_id, содержащее id автора, если он является зарегистрированным пользователем<br>" +
 				"* Ответ: JSON, содержащий информацию о результате загрузки (fileName, songId, fileDownloadUri, size, status (1 - загрузка выполнена успешно, 0 - ошибка во время сохранения файла, -1 - некорректный формат файла/файл с таким именем уже загружен))<br>" +
 				"* Поддерживаемые форматы: ogg, mp3, flac, mp4, m4a, m4p, wma, wav, ra, rm, m4b, ai<br><br>" +
-				"4) 84.201.143.25:8081/signup<br>" +
+				"4) 178.154.192.134:8080/signup<br>" +
 				"* Тип запроса: POST<br>" +
 				"* Тело запроса: JSON, содержащий поля:<br>" +
 				"	1. firstName - имя пользователя<br>" +
@@ -98,40 +98,40 @@ public class AudioUploadController {
 				"		- User registered! - пользователь успешно зарегистрирован!<br>" +
 				"		- User already exist! - пользователь с указанным логином уже существует<br>" +
 				"		- Registration error! - ошибка во время регистрации<br><br>" +
-				"5) 84.201.143.25:8081/login<br>" +
+				"5) 178.154.192.134:8080/login<br>" +
 				"* Тип запроса: POST<br>" +
 				"* Тело запроса:<br>" +
 				"	1. Поле username - логин пользователя<br>" +
 				"	2. Поле password - пароль пользователя<br>" +
 				"* Ответ: Код 200 в случае успешной регистрации, 401 - в случае ошибочных данных<br><br>" +
-				"6) 84.201.143.25:8081/audios/delete<br>" +
+				"6) 178.154.192.134:8080/audios/delete<br>" +
 				"* Тип запроса: DELETE<br>" +
 				"* Тело запроса: Поле id, содержащее id аудиофайла для удаления<br>" +
 				"* Ответ: Код 200, в случае успешного удаления, 404 - файл с указанным id отсутствует на сервере<br><br>" +
-				"7) 84.201.143.25:8081/logout<br>" +
+				"7) 178.154.192.134:8080/logout<br>" +
 				"* Тип запроса: Любой<br>" +
 				"* Ответ: Код 200, в случае успешного выхода из аккаунта<br><br>" +
-				"8) 84.201.143.25:8081/audios/public/all<br>" +
+				"8) 178.154.192.134:8080/audios/public/all<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: JSON, содержащий информацию о всех публичный аудиозаписях (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
-				"9) 84.201.143.25:8081/audios/public/*filename*<br>" +
+				"9) 178.154.192.134:8080/audios/public/*filename*<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: аудиофайл с публичным доступом<br><br>" +
-				"10) 84.201.143.25:8081/audios/recognition<br>" +
+				"10) 178.154.192.134:8080/audios/recognition<br>" +
 				"* Тип запроса: POST<br>" +
 				"* Тело запроса: поле file, содержащее аудиозапись<br>" +
 				"* Ответ: JSON, содержащий информацию о распонанной аудиозаписи (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
 				"Методы для администратора:<br>" +
-				"1) 84.201.143.25:8081/admin/users<br>" +
+				"1) 178.154.192.134:8080/admin/users<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: JSON, содержащий информацию о всех пользователях (firstName, lastName, username, password)<br><br>" +
-				"2) 84.201.143.25:8081/admin/audios<br>" +
+				"2) 178.154.192.134:8080/admin/audios<br>" +
 				"* Тип запроса: GET<br>" +
 				"* Ответ: JSON, содержащий информацию о всех аудиозаписях пользователей (record_id, user_id, path, record_name, duration, source, source_id, source_author, scope)<br><br>" +
-				"3) 84.201.143.25:8081/admin/delete_audio<br>" +
+				"3) 178.154.192.134:8080/admin/delete_audio<br>" +
 				"* Тип запроса: DELETE<br>" +
 				"* Тело запроса: поле recordId, содержащее id записи, которую надо удалить<br><br>" +
-				"4) 84.201.143.25:8081/admin/delete_user<br>" +
+				"4) 178.154.192.134:8080/admin/delete_user<br>" +
 				"* Тип запроса: DELETE<br>" +
 				"* Тело запроса: поле userId, содержащее id пользователя, которого надо удалить<br><br>";
 
@@ -256,7 +256,7 @@ public class AudioUploadController {
 				audioRepository.save(audioFile);
 
 				return new UploadResponse(file.getOriginalFilename(),
-						"84.201.143.25:8081/audios/" + (scope.equals("public") ? "public/" : "") + file.getOriginalFilename(),
+						"178.154.192.134:8080/audios/" + (scope.equals("public") ? "public/" : "") + file.getOriginalFilename(),
 							file.getSize(), status, audioFile.getRecordId());
 
 			} catch (Exception exception) {
