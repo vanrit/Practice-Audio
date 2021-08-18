@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import natalia.doskach.audioorganizer.telegram.Example;
+
 public class LoginActivity extends AppCompatActivity {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
@@ -72,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!loginT.isEmpty() & !passwordT.isEmpty()) {
             RequestQueue queue = MySingleton.getInstance(this.getApplicationContext()).
                     getRequestQueue();
-            String url = "http://84.201.143.25:8081/login";
+            String url = Example.url+"/login";
 
             // Request a string response from the provided URL.
             StringRequest stringRequest = new StringRequest(Request.Method.POST, url,

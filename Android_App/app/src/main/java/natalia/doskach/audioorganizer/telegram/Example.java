@@ -38,6 +38,7 @@ public final class Example {
     private static Client client = null;
     private static Context context = null;
     private static Activity activity = null;
+    public static String url = "http://178.154.192.134:8080";
 
     private static TdApi.AuthorizationState authorizationState = null;
     public static volatile boolean haveAuthorization = false;

@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import natalia.doskach.audioorganizer.telegram.Example;
 import natalia.doskach.audioorganizer.telegram.TelegramActivity;
 import natalia.doskach.audioorganizer.whatsapp.OpenWhatsAppActivity;
 
@@ -219,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void checkLog() {
         Log.i("check", "log");
-        String url2 = "http://84.201.143.25:8081/audios/all";
+        String url2 = Example.url + "/audios/all";
 
         StringRequest jsonObjectRequest = new StringRequest(Request.Method.GET, url2, new Response.Listener<String>() {
             @Override
@@ -378,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void logout(MenuItem item) {
         // Instantiate the RequestQueue.
-        String url = "http://84.201.143.25:8081/logout";
+        String url = Example.url + "/logout";
 
 // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,

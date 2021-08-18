@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
+import natalia.doskach.audioorganizer.telegram.Example;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -303,7 +304,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     private void uploadFile(int position, ViewHolder viewHolder) throws IOException {
         RequestQueue queue = MySingleton.getInstance(viewHolder.context).
                 getRequestQueue();
-        String url ="http://84.201.143.25:8081/login";
+        String url = Example.url + "/login";
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -313,7 +314,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                         filteredDataSet.get(position).ID = 5;
                         File file = new File(filteredDataSet.get(position).path);
                         Log.i("loged in","loged in");
-                        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, "http://84.201.143.25:8081/audios/upload",
+                        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, Example.url +"/audios/upload",
                                 new Response.Listener<NetworkResponse>() {
                                     @Override
                                     public void onResponse(NetworkResponse response) {
@@ -378,7 +379,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         };
         queue.add(stringRequest);
 //        Retrofit retrofit = new retrofit2.Retrofit.Builder()
-//                .baseUrl("http://84.201.143.25:8081/")
+//                .baseUrl(Example.url)
 //                .addConverterFactory(GsonConverterFactory.create())
 //                .build();
 //        ApiInterface service = retrofit.create(ApiInterface.class);
@@ -389,7 +390,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 //
 //                Log.i("success", response.toString());
 //                Retrofit retrofit = new retrofit2.Retrofit.Builder()
-//                        .baseUrl("http://84.201.143.25:8081/")
+//                        .baseUrl(Example.url)
 //                        .addConverterFactory(GsonConverterFactory.create())
 //                        .build();
 //                ApiInterface service = retrofit.create(ApiInterface.class);
@@ -441,7 +442,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     private void deleteItem(int position, ViewHolder viewHolder) { //delete from the list, delete file, delete file from server
 //        if(filteredDataSet.get(position).ID > 0){ //file is on server
 //            RequestQueue queue = Volley.newRequestQueue(viewHolder.context);
-//            String url ="http://84.201.143.25:8081/audios/delete";
+//            String url =Example.url+"/audios/delete";
 //            StringRequest stringRequest = new StringRequest(Request.Method.DELETE, url,
 //                    new Response.Listener<String>() {
 //                        @Override

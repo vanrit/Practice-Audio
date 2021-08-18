@@ -28,6 +28,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import natalia.doskach.audioorganizer.telegram.Example;
+
 public class RegisterActivity extends AppCompatActivity {
     EditText login;
     EditText password;
@@ -56,7 +58,7 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Пароли не совпадают!", Toast.LENGTH_SHORT).show();
         }
         else{
-            String url ="http://84.201.143.25:8081/signup";
+            String url =Example.url + "/signup";
             JSONObject j = new JSONObject();
             j.put("firstName","firstName");
             j.put("lastName","lastName");
@@ -72,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), response.getString("status"), Toast.LENGTH_SHORT).show();
                             else{
                                 Log.i("info","registered");
-                                String url ="http://84.201.143.25:8081/login";
+                                String url = Example.url+"/login";
 
                                 // Request a string response from the provided URL.
                                 StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
