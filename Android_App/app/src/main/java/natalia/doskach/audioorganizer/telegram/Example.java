@@ -141,8 +141,8 @@ public final class Example {
                 parameters.databaseDirectory = context.getFilesDir().getAbsolutePath();
                 parameters.useMessageDatabase = false;
                 parameters.useSecretChats = false;
-                parameters.apiId = 94575;
-                parameters.apiHash = "a3406de8d171bb422bb6ddf3bbd800e2";
+                parameters.apiId = 7553498;
+                parameters.apiHash = "29228cbf064ac33c4aa7dd3aa20a639c";
                 parameters.systemLanguageCode = "en";
                 parameters.deviceModel = Build.MODEL;
                 parameters.applicationVersion = "1.0";

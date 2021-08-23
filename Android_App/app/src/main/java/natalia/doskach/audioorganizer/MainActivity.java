@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET,url2,null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Toast.makeText(getApplicationContext(), "Checked", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), "Checked", Toast.LENGTH_SHORT).show();
                 if (response != null) {
                     Log.i("log", response.toString());
                 }
@@ -390,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Невозможно выйти из системы", Toast.LENGTH_SHORT).show();
                 }
                 if (error instanceof NetworkError)
-                    Toast.makeText(getApplicationContext(), "Проблемы с интернетом", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Проблемы с интернетом, "+error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
