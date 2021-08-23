@@ -25,6 +25,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -59,6 +61,7 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import natalia.doskach.audioorganizer.telegram.Example;
+import natalia.doskach.audioorganizer.telegram.TelegramActivity;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -82,6 +85,8 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     private int playingTune = -1;
     AlertDialog dialog;
     private ItemFilter mFilter = new ItemFilter();
+    Context cont;
+
 
     @Override
     public Filter getFilter() {
@@ -97,14 +102,14 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         protected FilterResults performFiltering(CharSequence constraint) {
             String filterString = constraint.toString().toLowerCase();
             FilterResults results = new FilterResults();
-            if(filterString.isEmpty())
-            {results.values = localDataSet;
-            return results;
+            if (filterString.isEmpty()) {
+                results.values = localDataSet;
+                return results;
             }
             final List<Audio> list = localDataSet;
             int count = list.size();
             final ArrayList<Audio> nlist = new ArrayList<Audio>(count);
-            String filterableString ;
+            String filterableString;
             for (int i = 0; i < count; i++) {
                 filterableString = list.get(i).name;
                 if (filterableString.toLowerCase().contains(filterString)) {
@@ -121,10 +126,11 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         protected void publishResults(CharSequence constraint, FilterResults results) {
             filteredDataSet = (ArrayList<Audio>) results.values;
             notifyDataSetChanged();
-            Log.i("info","data changed");
+            Log.i("info", "data changed");
         }
 
     }
+
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
@@ -188,9 +194,10 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
      * Initialize the dataset of the Adapter.
      *
      * @param dataSet String[] containing the data to populate views to be used
-     * by RecyclerView.
+     *                by RecyclerView.
      */
-    public AudioListAdapter(ArrayList<Audio> dataSet) {
+    public AudioListAdapter(ArrayList<Audio> dataSet,Context con) {
+        cont = con;
         localDataSet = dataSet;
         filteredDataSet = dataSet;
     }
@@ -212,49 +219,48 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         viewHolder.getAuthorTW().setText(filteredDataSet.get(position).author);
-        viewHolder.getLengthTW().setText(filteredDataSet.get(position).len/60+":"+filteredDataSet.get(position).len%60);
+        viewHolder.getLengthTW().setText(filteredDataSet.get(position).len / 60 + ":" + filteredDataSet.get(position).len % 60);
         viewHolder.getTitleTW().setText(filteredDataSet.get(position).name);
         viewHolder.getMenuBtn().setOnClickListener(new ImageButton.OnClickListener() {
             public void onClick(View v) {
-                Log.i("info","openMenu");
-                showPopupMenu(viewHolder,v,position);
+                Log.i("info", "openMenu");
+                showPopupMenu(viewHolder, v, position);
             }
         });
-        if(filteredDataSet.get(position).isDownloaded)
+        if (filteredDataSet.get(position).isDownloaded)
             viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);
         else
             viewHolder.getPlayBtn().setImageResource(R.drawable.ic_arrow_circle_down_48);
 
         viewHolder.getPlayBtn().setOnClickListener(new View.OnClickListener() {
-                                                       public void onClick(View v) {
-                                                           if (filteredDataSet.get(position).isDownloaded) {
-                                                               try {
-                                                                   playSong(viewHolder, v, position);
-                                                               } catch (IOException e) {
-                                                                   e.printStackTrace();
-                                                               }
-                                                           }
-                                                           else
-                                                               downloadSong(viewHolder, v, position);
+            public void onClick(View v) {
+                if (filteredDataSet.get(position).isDownloaded) {
+                    try {
+                        playSong(viewHolder, v, position);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else
+                    downloadSong(viewHolder, v, position);
 
-                                                       }});
+            }
+        });
     }
 
-    private void showPopupMenu(ViewHolder viewHolder, View v,int position) {
+    private void showPopupMenu(ViewHolder viewHolder, View v, int position) {
         PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
         popupMenu.inflate(R.menu.audio_list_menu);
-        if(filteredDataSet.get(position).isDownloaded){
-            if(filteredDataSet.get(position).ID > 0) //файл есть на сервере
-            popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("удалить файл");
-        else //файла нет на сервеое
-            popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("загрузить на сервер");
-        }
-        else
+        if (filteredDataSet.get(position).isDownloaded) {
+            if (filteredDataSet.get(position).ID > 0) //файл есть на сервере
+                popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("удалить файл");
+            else //файла нет на сервеое
+                popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("загрузить на сервер");
+        } else
             popupMenu.getMenu().findItem(R.id.downloadRemoveBtn).setTitle("скачать файл");
         popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
             @Override
             public void onDismiss(PopupMenu menu) {
-                Log.i("info","close Menu");
+                Log.i("info", "close Menu");
             }
         });
 
@@ -265,16 +271,16 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.renameBtn:
-                                Log.i("info","rename");
-                                renameItem(position,v);
+                                Log.i("info", "rename");
+                                renameItem(position, v);
                                 return true;
                             case R.id.downloadRemoveBtn:
-                                Log.i("info","download/remove");
-                                if(!filteredDataSet.get(position).isDownloaded)
-                                    downloadSong(viewHolder,v,position);
-                                else{
+                                Log.i("info", "download/remove");
+                                if (!filteredDataSet.get(position).isDownloaded)
+                                    downloadSong(viewHolder, v, position);
+                                else {
 
-                                    if(filteredDataSet.get(position).ID > 0) //файл есть на сервере
+                                    if (filteredDataSet.get(position).ID > 0) //файл есть на сервере
                                         removeFile(position, viewHolder);
                                     else //файла нет на сервеое
                                     {
@@ -287,7 +293,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                                 }
                                 return true;
                             case R.id.deleteBtn:
-                                Log.i("info","delete");
+                                Log.i("info", "delete");
                                 deleteItem(position, viewHolder);
                                 return true;
                             default:
@@ -304,80 +310,64 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     private void uploadFile(int position, ViewHolder viewHolder) throws IOException {
         RequestQueue queue = MySingleton.getInstance(viewHolder.context).
                 getRequestQueue();
-        String url = Example.url + "/login";
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
+        File file = new File(filteredDataSet.get(position).path);
+        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, Example.url + "/audios/upload",
+                new Response.Listener<NetworkResponse>() {
                     @Override
-                    public void onResponse(String response) {
-                        filteredDataSet.get(position).ID = 5;
-                        File file = new File(filteredDataSet.get(position).path);
-                        Log.i("loged in","loged in");
-                        VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, Example.url +"/audios/upload",
-                                new Response.Listener<NetworkResponse>() {
-                                    @Override
-                                    public void onResponse(NetworkResponse response) {
-                                        try {
-                                            filteredDataSet.get(position).ID = 5;
-                                            JSONObject obj = new JSONObject(new String(response.data));
-                                            Toast.makeText(viewHolder.context, obj.getString("message"), Toast.LENGTH_SHORT).show();
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                },
-                                new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        //                       Toast.makeText(dialog.getOwnerActivity(), error.getMessage(), Toast.LENGTH_LONG).show();
-                                        if(error instanceof ServerError)
-                                            Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
-                                        if(error instanceof AuthFailureError)
-                                        {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
-                                        }
-                                        if(error instanceof NetworkError)
-                                            Log.e("net-error", String.valueOf(error));
-                                    }
-                                }) {
-
-
-                            @Override
-                            protected Map<String, DataPart> getByteData() throws IOException {
-                                Map<String, DataPart> params = new HashMap<>();
-                                long imagename = System.currentTimeMillis();
-                                params.put("image", new DataPart(imagename + ".png", getFileDataFromFile(file)));
-                                return params;
+                    public void onResponse(NetworkResponse response) {
+                        Log.i("response","from upload:");
+                        try {
+                            JSONObject obj = new JSONObject(new String(response.data));
+                            Log.i("message",obj.toString());
+                            if(obj.getInt("status")==1)
+                            {
+                                Toast.makeText(cont, "Загрузка успешна", Toast.LENGTH_SHORT).show();
+                                filteredDataSet.get(position).ID = obj.getInt("songId");
                             }
-                        };
-
-                        //adding the request to volley
-                        queue.add(volleyMultipartRequest);
-
+                            else if(obj.getInt("status")==0) {
+                                Toast.makeText(cont, "Невозможно загрузить аудио на сервер, ошибка при сохранении", Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                Toast.makeText(cont, "Невозможно загрузить аудио на сервер, неподдерживаемый формат", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }, new Response.ErrorListener() {
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                               Toast.makeText(cont, "Невозможно загрузить аудио на сервер", Toast.LENGTH_LONG).show();
+                        if (error instanceof ServerError)
+                            Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
+                        if (error instanceof AuthFailureError) {
+                            Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
+                        }
+                        if (error instanceof NetworkError)
+                            Log.e("net-error", String.valueOf(error));
+                    }
+                }) {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                if(error instanceof ServerError)
-                    Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
-                if(error instanceof AuthFailureError)
-                {Log.e("auth-error", String.valueOf(error.networkResponse.statusCode));
-                }
-                if(error instanceof NetworkError)
-                    Log.e("net-error", String.valueOf(error));
-            }
-        }){
-            @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<String, String>();
-                params.put("username","TomB");
-                params.put("password","password");
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("source", "local");
                 return params;
             }
 
-
+            @Override
+            protected Map<String, DataPart> getByteData() throws IOException {
+                Map<String, DataPart> params = new HashMap<>();
+                params.put("file", new DataPart(file.getName(), getFileDataFromFile(file)));
+                return params;
+            }
         };
-        queue.add(stringRequest);
+
+        //adding the request to volley
+        queue.add(volleyMultipartRequest);
+
+    }
+
 //        Retrofit retrofit = new retrofit2.Retrofit.Builder()
 //                .baseUrl(Example.url)
 //                .addConverterFactory(GsonConverterFactory.create())
@@ -423,7 +413,6 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 //                Log.d("failure", "cause = " + t.getCause());
 //            }
 //        });
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public byte[] getFileDataFromFile(File file) throws IOException {
@@ -433,7 +422,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 
     private void removeFile(int position, ViewHolder viewHolder) {
         //TODO: remove File and delete item if not on server
-        Log.i("info","remove song");
+        Log.i("info", "remove song");
         filteredDataSet.get(position).isDownloaded = false;
         notifyItemChanged(position);
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_arrow_circle_down_48);
@@ -471,34 +460,34 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 //            queue.add(stringRequest);
 //        }
         deleteFromFiles(position);
-        }
+    }
 
     private void deleteFromFiles(int position) {
         File f = new File(filteredDataSet.get(position).path);
-        if(f.exists())
+        if (f.exists())
             f.delete();
         filteredDataSet.remove(position);
         notifyItemRemoved(position);
         notifyDataSetChanged();
     }
 
-    public void addItem(Audio a){
-        Log.i("audio","added");
+    public void addItem(Audio a) {
+        Log.i("audio", "added");
         filteredDataSet.add(a);
         notifyItemInserted(getItemCount());
 
     }
 
     private void renameItem(int position, View v) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(((Activity)v.getContext()));
+        AlertDialog.Builder builder = new AlertDialog.Builder(((Activity) v.getContext()));
         builder.setTitle(R.string.dialog_title);
-        LayoutInflater inflater = ((Activity)v.getContext()).getLayoutInflater();
+        LayoutInflater inflater = ((Activity) v.getContext()).getLayoutInflater();
         View moduleWindow = inflater.inflate(R.layout.dialog_rename, null);
         builder.setView(moduleWindow);
-        EditText form= (EditText) moduleWindow.findViewById(R.id.renameET);
+        EditText form = (EditText) moduleWindow.findViewById(R.id.renameET);
         form.setText(filteredDataSet.get(position).name);
-        Button yesButton= (Button) moduleWindow.findViewById(R.id.YESbutton);
-        Button noButton= (Button) moduleWindow.findViewById(R.id.NObutton);
+        Button yesButton = (Button) moduleWindow.findViewById(R.id.YESbutton);
+        Button noButton = (Button) moduleWindow.findViewById(R.id.NObutton);
         yesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -507,18 +496,20 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                 filteredDataSet.get(position).name = text;
                 notifyItemChanged(position);
                 dialog.dismiss();
-            }});
+            }
+        });
         noButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }});
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
         dialog = builder.show();
 
     }
 
     private void downloadSong(ViewHolder viewHolder, View v, int position) {
-        Log.i("info","download song");
+        Log.i("info", "download song");
 
         filteredDataSet.get(position).isDownloaded = true;
         notifyItemChanged(position);
@@ -526,32 +517,30 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     }
 
     private void playSong(ViewHolder viewHolder, View v, final int position) throws IOException {
-        if(playingTune==-1){ //start playing music
-            Log.i("info","start playing music pos:"+position+" pt:"+playingTune);
+        if (playingTune == -1) { //start playing music
+            Log.i("info", "start playing music pos:" + position + " pt:" + playingTune);
             playingTune = position;
-            playTune(viewHolder,v, position);
-        }
-        else if(playingTune==position){ //pause music
-            Log.i("info","pause music pos:"+position+" pt:"+playingTune);
+            playTune(viewHolder, v, position);
+        } else if (playingTune == position) { //pause music
+            Log.i("info", "pause music pos:" + position + " pt:" + playingTune);
             playingTune = -1;
-            pauseTune(viewHolder,v,position);
-        }
-        else{ //change music
-            Log.i("info","change music pos:"+position+" pt:"+playingTune);
-            pauseTune(viewHolder,v,playingTune);
+            pauseTune(viewHolder, v, position);
+        } else { //change music
+            Log.i("info", "change music pos:" + position + " pt:" + playingTune);
+            pauseTune(viewHolder, v, playingTune);
             playingTune = position;
-            playTune(viewHolder,v, position);
+            playTune(viewHolder, v, position);
         }
     }
 
 
     private void pauseTune(ViewHolder viewHolder, View v, int position) {
-        ((MainActivity)v.getContext()).pauseTune(position);
+        ((MainActivity) v.getContext()).pauseTune(position);
     }
 
     private void playTune(ViewHolder viewHolder, View v, int position) throws IOException {
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_pause_circle_48);
-        ((MainActivity)v.getContext()).playTune(filteredDataSet.get(position).path);
+        ((MainActivity) v.getContext()).playTune(filteredDataSet.get(position).path);
     }
 
 

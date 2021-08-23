@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -81,7 +82,8 @@ public class LoginActivity extends AppCompatActivity {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
-                            Toast.makeText(getApplicationContext(), "Вход выполнен", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Вход выполнен"+response, Toast.LENGTH_SHORT).show();
+
                             Intent data = new Intent();
                             setResult(Activity.RESULT_FIRST_USER);
                             finish();
@@ -89,6 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                     }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    Log.e("got", "error");
                     if (error instanceof ServerError)
                         Log.e("server-error", String.valueOf(error.networkResponse.statusCode));
                     Toast.makeText(getApplicationContext(), "Ошибка сервера", Toast.LENGTH_SHORT).show();
@@ -107,6 +110,16 @@ public class LoginActivity extends AppCompatActivity {
                     params.put(KEY_USERNAME, loginT);
                     params.put(KEY_PASSWORD, passwordT);
                     return params;
+                }
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    // since we don't know which of the two underlying network vehicles
+                    // will Volley use, we have to handle and store session cookies manually
+                    Log.i("response",response.headers.toString());
+                    Map<String, String> responseHeaders = response.headers;
+                    String rawCookies = responseHeaders.get("Set-Cookie");
+                    Log.i("cookies",rawCookies);
+                    return super.parseNetworkResponse(response);
                 }
 
 

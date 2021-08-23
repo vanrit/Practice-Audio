@@ -16,11 +16,9 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,7 +29,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -43,19 +40,14 @@ import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Authenticator;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,10 +57,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import natalia.doskach.audioorganizer.telegram.Example;
@@ -99,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     a.addItem(au);
                 }
                 if (result.getResultCode() == Activity.RESULT_FIRST_USER) {
+                    checkLog();
                     //just loged in
                 }
             });
@@ -107,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         queue = MySingleton.getInstance(this.getApplicationContext()).
                 getRequestQueue();
-        //checkLog();
+        checkLog();
 
         Log.i("onCreate", "onCreate");
         resetPlayingTune();
@@ -141,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayoutManager.VERTICAL);
         dividerItemDecoration.setDrawable(list.getContext().getResources().getDrawable(R.drawable.sk_line_divider));
         list.addItemDecoration(dividerItemDecoration);
-        a = new AudioListAdapter(audios.getAudios());
+        a = new AudioListAdapter(audios.getAudios(),this);
         list.setAdapter(a);
         list.setLayoutManager(new LinearLayoutManager(this));
         a.notifyDataSetChanged();
@@ -222,9 +212,9 @@ public class MainActivity extends AppCompatActivity {
         Log.i("check", "log");
         String url2 = Example.url + "/audios/all";
 
-        StringRequest jsonObjectRequest = new StringRequest(Request.Method.GET, url2, new Response.Listener<String>() {
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET,url2,null, new Response.Listener<JSONArray>() {
             @Override
-            public void onResponse(String response) {
+            public void onResponse(JSONArray response) {
                 Toast.makeText(getApplicationContext(), "Checked", Toast.LENGTH_SHORT).show();
                 if (response != null) {
                     Log.i("log", response.toString());
@@ -379,6 +369,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void logout(MenuItem item) {
         // Instantiate the RequestQueue.
+        Log.i("info","logging out");
         String url = Example.url + "/logout";
 
 // Request a string response from the provided URL.
@@ -386,6 +377,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        Log.i("logged out",response);
                         checkLog();
                     }
                 }, new Response.ErrorListener() {
@@ -404,6 +396,10 @@ public class MainActivity extends AppCompatActivity {
 
 // Add the request to the RequestQueue.
         queue.add(stringRequest);
+    }
+
+    public void showToast(String message){
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     public void synchronize(MenuItem item) {

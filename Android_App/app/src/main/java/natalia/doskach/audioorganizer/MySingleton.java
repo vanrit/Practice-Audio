@@ -8,6 +8,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
+
 public class MySingleton {
     private static MySingleton instance;
     private RequestQueue requestQueue;
@@ -38,6 +41,8 @@ public class MySingleton {
     public static synchronized MySingleton getInstance(Context context) {
         if (instance == null) {
             instance = new MySingleton(context);
+            CookieManager manager = new CookieManager();
+            CookieHandler.setDefault( manager  );
         }
         return instance;
     }
