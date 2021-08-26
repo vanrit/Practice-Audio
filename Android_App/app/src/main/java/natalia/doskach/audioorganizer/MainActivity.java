@@ -42,6 +42,13 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -66,7 +73,8 @@ import natalia.doskach.audioorganizer.whatsapp.OpenWhatsAppActivity;
 
 //activity for a list of recordings
 public class MainActivity extends AppCompatActivity {
-    MediaPlayer mediaPlayer;
+  //  MediaPlayer mediaPlayer;
+    SimpleExoPlayer mediaPlayer;
     static AudiosList audios;
     RequestQueue queue;
     AudioListAdapter a;
@@ -95,6 +103,33 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Example.ffmpeg = FFmpeg.getInstance(this);
+        try {
+            Example.ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
+
+                @Override
+                public void onStart() {
+                    Log.e("FFmpeg","start");
+                }
+
+                @Override
+                public void onFailure() {
+                    Log.e("FFmpeg","fail");
+                }
+
+                @Override
+                public void onSuccess() {
+                    Log.e("FFmpeg","sucess");
+                }
+
+                @Override
+                public void onFinish() {
+                    Log.e("FFmpeg","finish");
+                }
+            });
+        } catch (FFmpegNotSupportedException e) {
+                   Log.e("FFmpeg",e.getLocalizedMessage());
+        }
         queue = MySingleton.getInstance(this.getApplicationContext()).
                 getRequestQueue();
         checkLog();
@@ -104,13 +139,14 @@ public class MainActivity extends AppCompatActivity {
         audios = new AudiosList();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-        );
+        mediaPlayer = new SimpleExoPlayer.Builder(this).build();
+//        mediaPlayer = new MediaPlayer();
+//        mediaPlayer.setAudioAttributes(
+//                new AudioAttributes.Builder()
+//                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                        .setUsage(AudioAttributes.USAGE_MEDIA)
+//                        .build()
+//        );
         if (savedInstanceState != null) {
             Log.i("info", "got data");
             String data = savedInstanceState.getString("audios");
@@ -412,30 +448,37 @@ public class MainActivity extends AppCompatActivity {
         if(!new File(path).exists())
             Log.e("ERROR","file doesn't exist");
         Uri myUri = Uri.fromFile(new File(path));
-
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-        );
-        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer media, int what, int extra) {
-                Log.e("playing error:",path);
-                if (what == 100)
-                {
-                    if(mediaPlayer.isPlaying())
-                               mediaPlayer.stop();
-                    mediaPlayer.release();
-                }
-                return true;
-            }
-        });
-        mediaPlayer.setDataSource(getApplicationContext(), myUri);
+//        mediaPlayer = new SimpleExoPlayer.Builder(this).build();
+        mediaPlayer.release();
+        mediaPlayer = new SimpleExoPlayer.Builder(this).build();
+        MediaItem mediaItem = MediaItem.fromUri(myUri);
+        mediaPlayer.setMediaItem(mediaItem);
         mediaPlayer.prepare();
-        mediaPlayer.start();
+        mediaPlayer.setPlayWhenReady(true);
+        mediaPlayer.play();
+//        mediaPlayer = new MediaPlayer();
+//        mediaPlayer.setAudioAttributes(
+//                new AudioAttributes.Builder()
+//                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                        .setUsage(AudioAttributes.USAGE_MEDIA)
+//                        .build()
+//        );
+//        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+//            @Override
+//            public boolean onError(MediaPlayer media, int what, int extra) {
+//                Log.e("playing error:",path);
+//                if (what == 100)
+//                {
+//                    if(mediaPlayer.isPlaying())
+//                               mediaPlayer.stop();
+//                    mediaPlayer.release();
+//                }
+//                return true;
+//            }
+//        });
+//        mediaPlayer.setDataSource(getApplicationContext(), myUri);
+//        mediaPlayer.prepare();
+//        mediaPlayer.start();
     }
 
     public void pauseTune(int position) {
@@ -443,9 +486,16 @@ public class MainActivity extends AppCompatActivity {
         ImageButton playBtn = Objects.requireNonNull(v).findViewById(R.id.playBtn);
         playBtn.setImageResource(R.drawable.ic_play_circle_48);
         Log.i("pause", "tune");
-        if (mediaPlayer.isPlaying())
-            mediaPlayer.stop();
-        mediaPlayer.release();
+        if(mediaPlayer != null
+                && mediaPlayer.getPlaybackState() != Player.STATE_ENDED
+                && mediaPlayer.getPlaybackState() != Player.STATE_IDLE
+                && mediaPlayer.getPlayWhenReady()){
+            mediaPlayer.setPlayWhenReady(false);
+//            mediaPlayer.release();
+        }
+//        if (mediaPlayer.isPlaying())
+//            mediaPlayer.stop();
+//        mediaPlayer.release();
 //        mediaPlayer.seekTo(0);
     }
 

@@ -43,6 +43,7 @@ public class AudioTGAdapter extends RecyclerView.Adapter<AudioTGAdapter.ViewHold
         String date = mData.get(position).date;
         holder.sender.setText(sender);
         holder.date.setText(date);
+        if(mData.get(position).senderID != -1){
         TdApi.GetUser user = new TdApi.GetUser(mData.get(position).senderID);
         Example.getClient().send(user, new Client.ResultHandler() {
             @Override
@@ -55,6 +56,9 @@ public class AudioTGAdapter extends RecyclerView.Adapter<AudioTGAdapter.ViewHold
             }
         });
     }
+    else{
+            holder.sender.setText(sender);
+        }}
 
     // total number of rows
     @Override

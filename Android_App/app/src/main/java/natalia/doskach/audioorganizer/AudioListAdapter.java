@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.FileUtils;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -22,6 +23,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import cz.msebera.android.httpclient.Header;
 import natalia.doskach.audioorganizer.telegram.Example;
@@ -139,6 +142,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         private final TextView twAuthor;
         private final TextView twTitle;
         private final TextView twLength;
+        private final ProgressBar progressBar;
         private final ImageButton menuBtn;
         private final ImageButton playBtn;
         private final ConstraintLayout card;
@@ -150,6 +154,7 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
             super(view);
             // Define click listener for the ViewHolder's View
             twAuthor = (TextView) view.findViewById(R.id.authorTW);
+            progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
             twTitle = (TextView) view.findViewById(R.id.nameTW);
             twLength = (TextView) view.findViewById(R.id.lengthTW);
             menuBtn = (ImageButton) view.findViewById(R.id.listMenuBtn);
@@ -308,13 +313,29 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void uploadFile(int position, ViewHolder viewHolder) throws IOException {
+        viewHolder.progressBar.setVisibility(View.VISIBLE);
+        Toast.makeText(cont, "Загрузка: Конвертация", Toast.LENGTH_SHORT).show();
+        File file = new File(filteredDataSet.get(position).path);
+        int index = file.getName().lastIndexOf(".");
+        String ext = file.getName().substring(index+1);
+        if(ext.equals("m4a"))
+            finishUpload(position,viewHolder,file);
+        else
+            Example.convert(file,this,position, viewHolder);
+
+
+    }
+
+    public void finishUpload(int position, ViewHolder viewHolder, File file) {
+        viewHolder.progressBar.setVisibility(View.VISIBLE);
+        Toast.makeText(cont, "Загрузка: Отправка", Toast.LENGTH_SHORT).show();
         RequestQueue queue = MySingleton.getInstance(viewHolder.context).
                 getRequestQueue();
-        File file = new File(filteredDataSet.get(position).path);
         VolleyMultipartRequest volleyMultipartRequest = new VolleyMultipartRequest(Request.Method.POST, Example.url + "/audios/upload",
                 new Response.Listener<NetworkResponse>() {
                     @Override
                     public void onResponse(NetworkResponse response) {
+                        viewHolder.progressBar.setVisibility(View.INVISIBLE);
                         Log.i("response","from upload:");
                         try {
                             JSONObject obj = new JSONObject(new String(response.data));
@@ -323,12 +344,13 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                             {
                                 Toast.makeText(cont, "Загрузка успешна", Toast.LENGTH_SHORT).show();
                                 filteredDataSet.get(position).ID = obj.getInt("songId");
+                                file.exists();
                             }
                             else if(obj.getInt("status")==0) {
                                 Toast.makeText(cont, "Невозможно загрузить аудио на сервер, ошибка при сохранении", Toast.LENGTH_SHORT).show();
                             }
                             else{
-                                Toast.makeText(cont, "Невозможно загрузить аудио на сервер, неподдерживаемый формат", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(cont, "Невозможно загрузить аудио на сервер, неподдерживаемый формат или такой файл уже существует", Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -362,10 +384,9 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
                 return params;
             }
         };
-
+        Log.i("file", file.getName());
         //adding the request to volley
         queue.add(volleyMultipartRequest);
-
     }
 
 //        Retrofit retrofit = new retrofit2.Retrofit.Builder()
@@ -421,8 +442,8 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
     }
 
     private void removeFile(int position, ViewHolder viewHolder) {
-        //TODO: remove File and delete item if not on server
         Log.i("info", "remove song");
+        Toast.makeText(cont, "Файл удалён", Toast.LENGTH_LONG).show();
         filteredDataSet.get(position).isDownloaded = false;
         notifyItemChanged(position);
         viewHolder.getPlayBtn().setImageResource(R.drawable.ic_arrow_circle_down_48);
@@ -507,13 +528,28 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         dialog = builder.show();
 
     }
+    boolean  isDownloading = false;
 
     private void downloadSong(ViewHolder viewHolder, View v, int position) {
-        Log.i("info", "download song");
 
-        filteredDataSet.get(position).isDownloaded = true;
-        notifyItemChanged(position);
-        viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);
+        Log.i("info", "download song");
+        int dur = filteredDataSet.get(position).len / 10;
+        if(isDownloading)
+            return;
+        isDownloading = true;
+        Toast.makeText(cont, "Начало загрузки", Toast.LENGTH_SHORT).show();
+        viewHolder.progressBar.setVisibility(View.VISIBLE);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                isDownloading = false;
+                viewHolder.progressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(cont, "Загрузка успешна", Toast.LENGTH_SHORT).show();
+                filteredDataSet.get(position).isDownloaded = true;
+                notifyItemChanged(position);
+                viewHolder.getPlayBtn().setImageResource(R.drawable.ic_play_circle_48);
+            }
+        }, 1000 + dur*1000);
     }
 
     private void playSong(ViewHolder viewHolder, View v, final int position) throws IOException {

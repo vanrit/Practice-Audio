@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -19,6 +20,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import natalia.doskach.audioorganizer.telegram.Example;
 
 public class RecordAudioActivity extends AppCompatActivity {
 
@@ -34,6 +37,25 @@ public class RecordAudioActivity extends AppCompatActivity {
     private MediaRecorder recorder;
     boolean isRecording;
 
+    @Override
+    public void onBackPressed() {
+        Intent data = new Intent();
+//---set the data to pass back---
+        if(audio == null){
+            if(isRecording)
+            {getAudio();
+                data.putExtra("audio", audio);
+                setResult(RESULT_OK, data);
+                finish();
+            }
+            else setResult(RESULT_CANCELED, data);}
+
+        else{
+            data.putExtra("audio", audio);
+            setResult(RESULT_OK, data);}
+        finish();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,25 +69,12 @@ public class RecordAudioActivity extends AppCompatActivity {
         isRecording = false;
 
         backBtn.setOnClickListener(v -> {
-            Intent data = new Intent();
-//---set the data to pass back---
-            if(audio == null)
-                setResult(RESULT_CANCELED, data);
-            else{
-            data.putExtra("audio", audio);
-            setResult(RESULT_OK, data);}
-//---close the activity---
-            finish();
+        onBackPressed();
         });
 
         buttonRec.setOnClickListener(v -> {
             if (isRecording) {
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.stop();
-                isRecording = false;
-                recordStop();
-                File f = new File(path);
-                audio = new Audio(recordFile.substring(0,recordFile.length()-4), "unknown",10,path,true);
+                getAudio();
             } else {
                 if (askRuntimePermission()) {
                     try {
@@ -81,6 +90,16 @@ public class RecordAudioActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getAudio() {
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.stop();
+        isRecording = false;
+        recordStop();
+        File f = new File(path);
+        audio = new Audio(recordFile.substring(0,recordFile.length()-4), "unknown",10,path,true);
+    }
+
 
     private boolean askRuntimePermission() {
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)

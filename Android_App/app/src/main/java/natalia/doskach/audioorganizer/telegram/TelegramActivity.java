@@ -25,6 +25,7 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 import it.tdlight.common.utils.CantLoadLibrary;
 import natalia.doskach.audioorganizer.Audio;
@@ -42,6 +43,7 @@ public class TelegramActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(page == 4)
         {   Example.proceedLatch.countDown();
+            Example.proceedLatch = new CountDownLatch(1);
             changeFragmentToChats(chats);
 
         }

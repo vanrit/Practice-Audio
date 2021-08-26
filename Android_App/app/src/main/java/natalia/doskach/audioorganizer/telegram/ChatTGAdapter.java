@@ -64,6 +64,7 @@ public class ChatTGAdapter extends RecyclerView.Adapter<ChatTGAdapter.ViewHolder
             view.setBackgroundColor(view.getContext().getResources().getColor(R.color.light_gray));
             long chat_id = mData.get(getAdapterPosition()).id;
             Example.chat_id = chat_id;
+            Example.chatName = mData.get(getAdapterPosition()).title;
             Example.chatIDLatch.countDown();
         }
     }

@@ -12,6 +12,11 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
+import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
+import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOError;
@@ -31,14 +36,23 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import it.sauronsoftware.jave.AudioAttributes;
+import it.sauronsoftware.jave.Encoder;
+import it.sauronsoftware.jave.EncoderException;
+import it.sauronsoftware.jave.EncodingAttributes;
+import it.sauronsoftware.jave.InputFormatException;
+import natalia.doskach.audioorganizer.AudioListAdapter;
+
 /**
  * Example class for TDLib usage from Java.
  */
 public final class Example {
+    public static FFmpeg ffmpeg;
     private static Client client = null;
     private static Context context = null;
     private static Activity activity = null;
     public static String url = "http://178.154.192.134:8080";
+    public static String chatName = null;
 
     private static TdApi.AuthorizationState authorizationState = null;
     public static volatile boolean haveAuthorization = false;
@@ -97,6 +111,63 @@ public final class Example {
 
     public static Client getClient() {
         return client;
+    }
+
+    public static void convert(File source, AudioListAdapter audioListAdapter, int position, AudioListAdapter.ViewHolder viewHolder) {
+//        String destinationFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+        int index = source.getName().lastIndexOf(".");
+        String name = source.getName().substring(0,index);
+        String ext = source.getName().substring(index);
+//        if(ext.equals("p4a"))
+//        {audioListAdapter.finishUpload(position, viewHolder, source);
+//        return;}
+        String destinationPath = source.getParent()+"/"+name+".m4a";
+        File check = new File(destinationPath);
+        if(check.exists())
+            check.delete();
+        String[] cmd = new String[5];
+//        cmd[0] = "ffmpeg ";
+        cmd[0] = "-i";
+        cmd[1] = source.getPath();
+        cmd[2] = "-preset";
+        cmd[3] = "ultrafast";
+        cmd[4] = destinationPath;
+
+//        ffmpeg = FFmpeg.getInstance(context);
+        try {
+            // to execute "ffmpeg -version" command you just need to pass "-version"
+            Example.ffmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
+
+                @Override
+                public void onStart() {
+                    Log.e("FFmpeg","start");
+                }
+
+                @Override
+                public void onProgress(String message) {
+                    Log.e("FFmpeg pr",message);
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    Log.e("FFmpeg fal",message);
+                }
+
+                @Override
+                public void onSuccess(String message) {
+                    Log.e("FFmpeg success",message);
+                    File file = new File(destinationPath );
+                    audioListAdapter.finishUpload(position, viewHolder, file);
+                }
+
+                @Override
+                public void onFinish() {
+                    Log.e("FFmpeg","finished");
+                }
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+            Log.e("FFmpeg error",e.getLocalizedMessage());
+        }
     }
 
     private static void print(String str) {
@@ -515,9 +586,18 @@ public final class Example {
                                 Date date = new java.util.Date(message.date * 1000L);
                                 SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                                 String strDate = formatter.format(date);
-                                int senderID = ((TdApi.MessageSenderUser) message.sender).userId;
+                                int senderID;
+                                String senderName;
+                                try{
+                                    senderID = ((TdApi.MessageSenderUser) message.sender).userId;
+                                    senderName = null;
+                                }
+                                catch(Throwable cause){
+                                    senderID = -1;
+                                    senderName = chatName;
+                                }
                                 TdApi.MessageVoiceNote voice = (TdApi.MessageVoiceNote) message.content;
-                                audios.add(new AudioItems(voice.voiceNote.voice.id, senderID, null, strDate));
+                                audios.add(new AudioItems(voice.voiceNote.voice.id, senderID, senderName, strDate));
                             }
                         }
                         Log.i("left is", String.valueOf(left - count));
@@ -632,15 +712,18 @@ public final class Example {
             switch (object.getConstructor()) {
                 case TdApi.UpdateFile.CONSTRUCTOR:
 //                    if(((TdApi.UpdateFile) object))
+                    Log.i("update","file");
                     TdApi.File f = ((TdApi.UpdateFile) object).file;
                     if(f.local.isDownloadingCompleted){
                         String path = ((TdApi.UpdateFile) object).file.local.path;
                         File realFile = new File(path);
-                        if(realFile.exists())
-                            Log.i("file","exists");
-                        else
-                            Log.e("file"," doesn't exists");
-                        copyFiles(path);
+//                        File to = new File(realFile.getParent(),realFile.getName().replace(".oga",".ogg"));
+//                        realFile.renameTo(to);
+//                        if(to.exists())
+//                            Log.i("file","exists:"+to.getPath());
+//                        else
+//                            Log.e("file"," doesn't exists");
+////                      String path = copyFiles(path);
                         ((TelegramActivity) activity).returnAudio(path);
                         client.close();
                         waitForAudioFile.countDown();
@@ -859,22 +942,26 @@ public final class Example {
             }
         }
 
-        private void copyFiles(String path) {
-            String sourcePath = path;
-            File source = new File(sourcePath);
-            String name = source.getName();
-            String destinationPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-            File destination = new File(destinationPath,name);
-            try
-            {
-                FileUtils.copyFile(source, destination);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
+
     }
+
+//    public static void copyFiles(String path) {
+//        String sourcePath = path;
+//        File source = new File(sourcePath);
+//        String name = source.getName();
+//        String destinationPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+//        File destination = new File(destinationPath,name);
+//        try
+//        {
+//            FileUtils.copyFile(source, destination);
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
+
+
 
     static class AuthorizationRequestHandler implements Client.ResultHandler {
         @Override

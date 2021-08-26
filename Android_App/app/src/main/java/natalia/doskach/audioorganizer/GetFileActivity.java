@@ -27,6 +27,17 @@ public class GetFileActivity extends AppCompatActivity {
     private static final int PICKFILE_RESULT_CODE = 1;
 
     @Override
+    public void onBackPressed() {
+        Intent data = new Intent();
+        if(audio == null)
+            setResult(RESULT_CANCELED, data);
+        else{
+            data.putExtra("audio", audio);
+            setResult(RESULT_OK, data);}
+        finish();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_file);
@@ -43,18 +54,7 @@ public class GetFileActivity extends AppCompatActivity {
         });
 
         backBtn.setOnClickListener(v -> {
-            Intent data = new Intent();
-//---set the data to pass back---
-            if(audio == null)
-                setResult(RESULT_CANCELED, data);
-            else{
-                data.putExtra("audio", audio);
-                setResult(RESULT_OK, data);}
-//---close the activity---
-            finish();
-
-//            Intent intent = new Intent(GetFileActivity.this, MainActivity.class);
-//            startActivity(intent);
+            onBackPressed();
         });
     }
 
